@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="56dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/format_title"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_title" />
+
+            <ImageButton
+                android:id="@+id/format_list"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_format_list_bulleted" />
+
+            <ImageButton
+                android:id="@+id/format_search"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_search" />
+
+            <ImageButton
+                android:id="@+id/format_table"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_border_all" />
+
+            <ImageButton
+                android:id="@+id/format_link"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_link" />
+
+            <ImageButton
+                android:id="@+id/format_order"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_reorder" />
+
+            <ImageButton
+                android:id="@+id/format_htm"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_image_search" />
+
+            <ImageButton
+                android:id="@+id/format_indent_increase"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_format_indent_increase" />
+
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <EditText
+        android:id="@+id/edit"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="start"
+        android:text="我们\n\n\n我们\n\n\n我们"/>
+
+</LinearLayout>
