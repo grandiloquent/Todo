@@ -59,7 +59,9 @@ public class EditActivity extends Activities {
     }
 
     private void formatSearch() {
-        mEditText.setText(NativeUtils.removeRedundancy(mEditText.getText().toString()));
+        NativeUtils.renderMarkdown(mEditText.getText().toString(),
+                new File(Environment.getExternalStorageDirectory(), "1.htm").getAbsolutePath());
+        //mEditText.setText(NativeUtils.removeRedundancy(mEditText.getText().toString()));
         //EditUtils.replace(this);
     }
 
