@@ -29,6 +29,16 @@ import euphoria.psycho.common.Markdowns;
 import euphoria.psycho.common.Strings;
 
 public class EditUtils {
+    static void addLink(EditText editText, ClipboardManager clipboardManager) {
+
+        CharSequence strings = Contexts.getClipboardString(clipboardManager);
+        if (strings == null) {
+            editText.getText().insert(editText.getSelectionStart(), "[]()");
+        } else {
+            editText.getText().insert(editText.getSelectionStart(), "[](".concat(strings.toString().trim()).concat(")"));
+        }
+    }
+
     public static int[] extendSelect(EditText editText) {
         String value = editText.getText().toString();
         if (value.length() == 0) {
@@ -62,28 +72,14 @@ public class EditUtils {
 
         if (EditTexts.isWhitespace(activity.getEditText())) return;
         String val = activity.getEditText().getText().toString();
-        String pattern = "<!DOCTYPE html>\n" +
-                "<html>\n" +
-                "<head>\n" +
-                "    <meta charset=utf-8>\n" +
-                "    <meta http-equiv=X-UA-Compatible content=\"chrome=1\">\n" +
-                "    <meta name=\"viewport\" content=\"width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no\">\n" +
-                "    <title>%s</title>\n" +
-                "    <link rel=stylesheet href=app.css>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "%s" +
-                "</body>\n" +
-                "</html>";
+
         File dir = new File(Environment.getExternalStorageDirectory(), "Notes");
         if (!dir.isDirectory()) dir.mkdir();
 
         String title = Files.getValidFileName(Strings.substringBefore(val.trim(), '\n'), ' ') + ".htm";
         File out = new File(dir, title);
-        FileOutputStream os = new FileOutputStream(out);
-        byte[] buf = String.format(pattern, title, val).getBytes("UTF-8");
-        os.write(buf, 0, buf.length);
 
+        NativeUtils.renderMarkdown(val, out.getAbsolutePath());
 
         Intent textIntent = new Intent();
         textIntent.setAction(Intent.ACTION_VIEW);
@@ -91,6 +87,22 @@ public class EditUtils {
         activity.startActivity(textIntent);
     }
 
+    static void formatIndentIncrease(EditActivity activity) {
+
+
+        int[] position = extendSelect(activity.getEditText());
+        activity.getEditText().setSelection(position[0], position[1]);
+        String value = activity.getEditText().getText().toString().substring(position[0], position[1]);
+        String[] lines = value.split("\n");
+        StringBuilder sb = new StringBuilder();
+        for (String l : lines) {
+
+
+            sb.append("    ").append(l).append('\n');
+        }
+        activity.getEditText().getText().replace(activity.getEditText().getSelectionStart(), activity.getEditText().getSelectionEnd(), sb.toString());
+
+    }
 
     static void formatList(EditActivity activity) {
 
@@ -210,23 +222,6 @@ public class EditUtils {
         return start;
     }
 
-    static void formatIndentIncrease(EditActivity activity) {
-
-
-        int[] position = extendSelect(activity.getEditText());
-        activity.getEditText().setSelection(position[0], position[1]);
-        String value = activity.getEditText().getText().toString().substring(position[0], position[1]);
-        String[] lines = value.split("\n");
-        StringBuilder sb = new StringBuilder();
-        for (String l : lines) {
-
-
-            sb.append("    ").append(l).append('\n');
-        }
-        activity.getEditText().getText().replace(activity.getEditText().getSelectionStart(), activity.getEditText().getSelectionEnd(), sb.toString());
-
-    }
-
     static void replace(EditActivity activity) {
         View view = LayoutInflater.from(activity).inflate(R.layout.dialog_find, null);
 
@@ -286,15 +281,5 @@ public class EditUtils {
 
                     }
                 }).show();
-    }
-
-    static void addLink(EditText editText, ClipboardManager clipboardManager) {
-
-        CharSequence strings = Contexts.getClipboardString(clipboardManager);
-        if (strings == null) {
-            editText.getText().insert(editText.getSelectionStart(), "[]()");
-        } else {
-            editText.getText().insert(editText.getSelectionStart(), "[](".concat(strings.toString().trim()).concat(")"));
-        }
     }
 }

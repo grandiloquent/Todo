@@ -59,10 +59,10 @@ public class EditActivity extends Activities {
     }
 
     private void formatSearch() {
-        NativeUtils.renderMarkdown(mEditText.getText().toString(),
-                new File(Environment.getExternalStorageDirectory(), "1.htm").getAbsolutePath());
-        //mEditText.setText(NativeUtils.removeRedundancy(mEditText.getText().toString()));
-        //EditUtils.replace(this);
+//        NativeUtils.renderMarkdown(mEditText.getText().toString(),
+//                new File(Environment.getExternalStorageDirectory(), "1.htm").getAbsolutePath());
+//        //mEditText.setText(NativeUtils.removeRedundancy(mEditText.getText().toString()));
+        EditUtils.replace(this);
     }
 
     private void formatTable() {
@@ -140,8 +140,16 @@ public class EditActivity extends Activities {
         findViewById(R.id.format_search).setOnClickListener(v -> formatSearch());
         findViewById(R.id.format_table).setOnClickListener(v -> formatTable());
         findViewById(R.id.format_title).setOnClickListener(v -> formatTitle());
+        findViewById(R.id.format_line_spacing).setOnClickListener(v -> formatLineSpacing());
 
 
+    }
+
+    private void formatLineSpacing() {
+
+        if (!EditTexts.isWhitespace(mEditText)) {
+            mEditText.setText(NativeUtils.removeRedundancy(mEditText.getText().toString().trim()));
+        }
     }
 
     @Override
