@@ -119,7 +119,8 @@ add_library(${mbedtls_static_target} STATIC ${src_tls})
 target_link_libraries(${mbedtls_static_target} ${libs} ${mbedx509_static_target})
 
 add_library(https
-        https/utils_httpc.c)
+        https/utils_httpc.c
+        https/config.c)
 
 find_library(
         log-lib
