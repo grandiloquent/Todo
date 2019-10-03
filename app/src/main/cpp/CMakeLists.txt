@@ -107,7 +107,7 @@ set(mbedtls_static_target "mbedtls")
 set(mbedx509_static_target "mbedx509")
 set(mbedcrypto_static_target "mbedcrypto")
 
-set(libs ${libs} pthread)
+#set(libs ${libs} pthread)
 
 add_library(${mbedcrypto_static_target} STATIC ${src_crypto})
 target_link_libraries(${mbedcrypto_static_target} ${libs})
@@ -118,24 +118,16 @@ target_link_libraries(${mbedx509_static_target} ${libs} ${mbedcrypto_static_targ
 add_library(${mbedtls_static_target} STATIC ${src_tls})
 target_link_libraries(${mbedtls_static_target} ${libs} ${mbedx509_static_target})
 
-add_library(https
-        https/utils_httpc.c
-        https/config.c
-        https/utils_timer.c
-        https/network_interface.c
-        https/network_tls.c
-        https/HAL_TLS_mbedtls.c
-        https/network_socket.c
-        https/network_at_tcp.c)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/mbedtls/include)
 find_library(
         log-lib
 
         log)
 
-target_include_directories(https PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/mbedtls/include)
+target_include_directories(native-lib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/mbedtls/include)
 target_link_libraries(
         native-lib
         markdown
-
+        mbedtls
         ${log-lib})
