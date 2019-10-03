@@ -10,7 +10,8 @@ add_library( # Sets the name of the library.
 
 
         native-lib.c
-        utils_string.c)
+        utils_string.c
+        https.c)
 
 add_library(markdown
         STATIC
