@@ -120,14 +120,20 @@ target_link_libraries(${mbedtls_static_target} ${libs} ${mbedx509_static_target}
 
 add_library(https
         https/utils_httpc.c
-        https/config.c)
+        https/config.c
+        https/utils_timer.c
+        https/network_interface.c
+        https/network_tls.c
+        https/HAL_TLS_mbedtls.c
+        https/network_socket.c
+        https/network_at_tcp.c)
 
 find_library(
         log-lib
 
         log)
 
-
+target_include_directories(https PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/mbedtls/include)
 target_link_libraries(
         native-lib
         markdown
