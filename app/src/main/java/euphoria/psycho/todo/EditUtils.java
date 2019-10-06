@@ -62,6 +62,7 @@ public class EditUtils {
 
         if (value.charAt(start) == '\n') start++;
 
+        if (end + 1 ==len) end = len;
         return new int[]{
                 start, end
         };

@@ -138,8 +138,8 @@ public class MainActivity extends Activities implements OnItemClickListener {
 
         listView.setOnItemLongClickListener((parent, view, position, id) -> {
             PopupMenu popupMenu = new PopupMenu(view.getContext(), view);
-            popupMenu.getMenu().add(0, 1, 0, "删除");
             popupMenu.getMenu().add(0, 2, 0, "编辑");
+            popupMenu.getMenu().add(0, 1, 0, "删除");
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case 1:

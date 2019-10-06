@@ -5,6 +5,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Environment;
 import android.text.Editable;
+import android.text.style.EasyEditSpan;
 import android.util.Pair;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -141,9 +142,22 @@ public class EditActivity extends Activities {
         findViewById(R.id.format_table).setOnClickListener(v -> formatTable());
         findViewById(R.id.format_title).setOnClickListener(v -> formatTitle());
         findViewById(R.id.format_line_spacing).setOnClickListener(v -> formatLineSpacing());
+        findViewById(R.id.format_calculate).setOnClickListener(v -> formatCalculate());
 
+        mEditText.setText("123\n123\n123");
+    }
+
+    private void formatCalculate() {
+        if (EditTexts.isWhitespace(mEditText)) return;
+
+        String text = EditTexts.selectLine(mEditText);
+
+        double ret = NativeUtils.calculateExpr(text);
+
+        mEditText.getText().insert(mEditText.getSelectionEnd(), String.format(" = %f", ret));
 
     }
+
 
     private void formatLineSpacing() {
 

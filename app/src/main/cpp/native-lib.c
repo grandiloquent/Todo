@@ -9,6 +9,7 @@
 #include "markdown/markdown.h"
 #include "markdown/html.h"
 #include "youdao.h"
+#include "tinyexpr/tinyexpr.h"
 
 JNIEXPORT jstring JNICALL
 Java_euphoria_psycho_todo_NativeUtils_removeRedundancy(JNIEnv *env, jclass type, jstring text_) {
@@ -177,4 +178,16 @@ Java_euphoria_psycho_todo_NativeUtils_youdaoDictionary(JNIEnv *env, jclass type,
 
     (*env)->ReleaseStringUTFChars(env, word_, word);
     return (*env)->NewStringUTF(env, "123");
+}
+
+JNIEXPORT jdouble JNICALL
+Java_euphoria_psycho_todo_NativeUtils_calculateExpr(JNIEnv *env, jclass type, jstring expr_) {
+    const char *expr = (*env)->GetStringUTFChars(env, expr_, 0);
+
+    double ret = te_interp(expr, 0);
+
+
+    (*env)->ReleaseStringUTFChars(env, expr_, expr);
+
+    return ret;
 }

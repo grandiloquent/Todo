@@ -127,6 +127,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/mbedtls/include)
 
 add_library(cJSON ${CMAKE_CURRENT_SOURCE_DIR}/cJSON/cJSON.c)
 add_library(tmd5 ${CMAKE_CURRENT_SOURCE_DIR}/tmd5/tmd5.c)
+add_library(tinyexpr ${CMAKE_CURRENT_SOURCE_DIR}/tinyexpr/tinyexpr.c)
 
 find_library(
         log-lib
@@ -138,5 +139,6 @@ target_link_libraries(
         markdown
         mbedtls
         cJSON
+        tinyexpr
         tmd5
         ${log-lib})

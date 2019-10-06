@@ -10,4 +10,8 @@ public class NativeUtils {
     public static native void renderMarkdown(String text, String outFile);
 
     public static native String youdaoDictionary(String word);
+
+    public static native double calculateExpr(String expr);
+
+
 }
