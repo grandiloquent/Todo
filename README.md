@@ -4,3 +4,4 @@
 - https://github.com/codeplea/tinyexpr
 - https://github.com/DaveGamble/cJSON
 - https://github.com/taosdata/TDengine
+- https://github.com/boyerjohn/rapidstring

@@ -15,6 +15,8 @@
 #include <netdb.h>
 #include "log.h"
 
+#define TIMEOUT_MS 5000
+
 typedef enum {
 
     ERR_SUCCESS = 0,       // 表示成功返回
@@ -40,5 +42,7 @@ uintptr_t http_connect(const char *host, uint16_t port);
 
 int http_write(uintptr_t fd, const unsigned char *buf, uint32_t len, uint32_t timeout_ms,
                size_t *written_len);
+
+
 
 #endif
