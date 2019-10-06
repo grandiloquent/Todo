@@ -195,9 +195,10 @@ LOGE("socket error: %\s \n",data);
         return NULL;
     }
 
-    char response[4096];
-   int ret= http_read_chunked(&http_info,response,4096);
-   LOGE("%d\n%s\n",ret,response);
+    http_get(&http_info,url,NULL,3);
+//    char response[4096];
+//   int ret= http_read_chunked(&http_info,response,4096);
+   //LOGE("%d\n%s\n",ret,response);
     http_close(&http_info);
     (*env)->ReleaseStringUTFChars(env, word_, url);
     return (*env)->NewStringUTF(env, "123");
