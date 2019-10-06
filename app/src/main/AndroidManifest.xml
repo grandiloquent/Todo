@@ -10,7 +10,10 @@
         <activity
             android:name=".MainActivity"
             android:windowSoftInputMode="adjustNothing">
-
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity android:name=".SettingsActivity" />
         <activity android:name=".CalculatorActivity">
@@ -20,10 +23,7 @@
 
         </activity>
         <activity android:name=".EditActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+
         </activity>
         <activity android:name=".ViewActivity" />
         <activity android:name=".CommonActivity">
