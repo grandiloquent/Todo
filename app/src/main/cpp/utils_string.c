@@ -46,9 +46,9 @@ char *remove_redundancy(const char *s) {
             memset(tmp, 0, len + 1);
             strncpy(tmp, p, len);
             if (iswhitespace(tmp)) {
-                strcat(ret, "\n");
+
                 while (isspace(*++text))
-                    p = text + 1;
+                    p = text;
                 continue;
             } else {
                 strcat(ret, tmp);

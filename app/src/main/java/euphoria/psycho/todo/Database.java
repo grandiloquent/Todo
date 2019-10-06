@@ -46,7 +46,7 @@ public class Database extends SQLiteOpenHelper {
     }
 
     public List<Pair<Integer, String>> fetchTitles() {
-        Cursor cursor = getReadableDatabase().rawQuery("select _id,title from strings", null);
+        Cursor cursor = getReadableDatabase().rawQuery("select _id,title from strings order by updateAt desc", null);
         List<Pair<Integer, String>> strings = new ArrayList<>();
         while (cursor.moveToNext()) {
             strings.add(Pair.create(cursor.getInt(0), cursor.getString(1)));
