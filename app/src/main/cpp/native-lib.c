@@ -8,7 +8,7 @@
 #include "log.h"
 #include "markdown/markdown.h"
 #include "markdown/html.h"
-#include "https.h"
+#include "youdao.h"
 
 JNIEXPORT jstring JNICALL
 Java_euphoria_psycho_todo_NativeUtils_removeRedundancy(JNIEnv *env, jclass type, jstring text_) {
@@ -170,36 +170,11 @@ Java_euphoria_psycho_todo_NativeUtils_renderMarkdown(JNIEnv *env, jclass type, j
 //_mbedtls_client_init(params);
 JNIEXPORT jstring JNICALL
 Java_euphoria_psycho_todo_NativeUtils_youdaoDictionary(JNIEnv *env, jclass type, jstring word_) {
-    const char *url = (*env)->GetStringUTFChars(env, word_, 0);
+    const char *word = (*env)->GetStringUTFChars(env, word_, 0);
 
 
-    HTTP_INFO http_info;
-    http_init(&http_info,FALSE);
-    char data[1024];
+    youdao_query_dictionary(word);
 
-
-    if(http_open(&http_info,url)<0){
-        http_strerror(data,1024);
-        LOGE("socket error: %s \n",data);
-        http_close(&http_info);
-        return NULL;
-    }
-    snprintf(http_info.request.method,8,"GET");
-    http_info.request.close=TRUE;
-    http_info.request.chunked=FALSE;
-
-
-    if(http_write_header(&http_info)<0){
-http_strerror(data,1024);
-LOGE("socket error: %\s \n",data);
-        return NULL;
-    }
-
-    http_get(&http_info,url,NULL,3);
-//    char response[4096];
-//   int ret= http_read_chunked(&http_info,response,4096);
-   //LOGE("%d\n%s\n",ret,response);
-    http_close(&http_info);
-    (*env)->ReleaseStringUTFChars(env, word_, url);
+    (*env)->ReleaseStringUTFChars(env, word_, word);
     return (*env)->NewStringUTF(env, "123");
 }

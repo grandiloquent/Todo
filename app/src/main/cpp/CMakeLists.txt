@@ -11,7 +11,9 @@ add_library( # Sets the name of the library.
 
         native-lib.c
         utils_string.c
-        https.c)
+        utils_httpc.c
+        picohttpparser.c
+        youdao.c)
 
 add_library(markdown
         STATIC
@@ -121,9 +123,13 @@ target_link_libraries(${mbedtls_static_target} ${libs} ${mbedx509_static_target}
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/mbedtls/include)
+
+
+add_library(cJSON ${CMAKE_CURRENT_SOURCE_DIR}/cJSON/cJSON.c)
+add_library(tmd5 ${CMAKE_CURRENT_SOURCE_DIR}/tmd5/tmd5.c)
+
 find_library(
         log-lib
-
         log)
 
 target_include_directories(native-lib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/mbedtls/include)
@@ -131,4 +137,6 @@ target_link_libraries(
         native-lib
         markdown
         mbedtls
+        cJSON
+        tmd5
         ${log-lib})
