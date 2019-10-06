@@ -10,6 +10,7 @@
 #include "log.h"
 #include "utils_httpc.h"
 #include "picohttpparser.h"
+#include "utils_string.h"
 
 #define YOUDAO_HOST "openapi.youdao.com"
 #define YOUDAO_APPKEY "1f5687b5a6b94361"
@@ -89,10 +90,13 @@ static int youdao_parse_dictionary(const char *json_string, rapidstring *s) {
         rs_cat(s, cJSON_GetObjectItem(w, "key")->valuestring);
         const cJSON *values = cJSON_GetObjectItem(w, "value");
         const cJSON *value = NULL;
+        rs_cat(s, " ");
+
         cJSON_ArrayForEach(value, values) {
             rs_cat(s, value->valuestring);
             rs_cat(s, ",");
         }
+        rs_erase(s, rs_len(s) - 1, 1);
         rs_cat(s, "\n");
     }
     end:
@@ -109,14 +113,12 @@ static void make_header(char *buf, const char *path) {
 }
 
 static char *read_body(uintptr_t fd) {
-    struct phr_chunked_decoder decoder = {}; /* zero-clear */
     char *buf = malloc(4096);
-    size_t size = 0, capacity = 4096, rsize;
-    ssize_t rret, pret;
+    size_t size = 0, capacity = 4096;
+    ssize_t rret;
 
 /* set consume_trailer to 1 to discard the trailing header, or the application
  * should call phr_parse_headers to parse the trailing header */
-    decoder.consume_trailer = 1;
 
     do {
         /* expand the buffer if necessary */
@@ -131,19 +133,21 @@ static char *read_body(uintptr_t fd) {
             LOGE("%s\n", "IO Error");
             return NULL;
         }
-        /* decode */
-        rsize = rret;
-        pret = phr_decode_chunked(&decoder, buf + size, &rsize);
-        if (pret == -1) {
-            LOGE("%s\n", "Parse Error");
-            return NULL;
+        if (indexof(buf, "0\r\n\r\n") != -1) {
+            LOGE("Find the end mark %d\n", indexof(buf, "0\r\n\r\n"));
+            break;
         }
-        size += rsize;
-    } while (pret == -2);
+        LOGE("%d:%d", rret, strlen(buf));
+        /* decode */
+//        pret = phr_decode_chunked(&decoder, buf + size, &rsize);
+//        if (pret == -1) {
+//            LOGE("%s\n", "Parse Error");
+//            LOGE("%s\n", buf);
+//            return NULL;
+//        }
+        size += rret;
+    } while (1);
 
-/* successfully decoded the chunked data */
-    assert(pret >= 0);
-    printf("decoded data is at %p (%zu bytes)\n", buf, size);
     return buf;
 }
 
@@ -177,8 +181,23 @@ char *youdao_query_dictionary(const char *q) {
     //5.
 
     char *body = read_body(fd);
+    body = strstr(body, "\r\n\r\n");
+    if (body == NULL)return NULL;
+    body = body + 4;
+    LOGE("========>%s\n", body);
 
-    LOGE("%s\n", body);
+    body = strstr(body, "\r\n");
+    if (body == NULL)return NULL;
+
+
+    rapidstring s;
+    rs_init(&s);
+    youdao_parse_dictionary(body, &s);
+
+    free(body);
+
+    LOGE("%s\n", rs_data(&s));
+
     end:
     http_disconnect(fd);
     return NULL;

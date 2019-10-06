@@ -7,4 +7,6 @@ bool iswhitespace(const char *s);
 
 char *remove_redundancy(const char *s);
 
+int indexof(const char *s, const char *find);
+
 #endif

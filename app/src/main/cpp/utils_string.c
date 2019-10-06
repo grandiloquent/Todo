@@ -4,6 +4,24 @@
 #include <malloc.h>
 #include <memory.h>
 
+int indexof(const char *s, const char *find) {
+    char c, sc;
+    size_t len;
+    int count = 0;
+
+    if ((c = *find++) != 0) {
+        len = strlen(find);
+        do {
+            do {
+                if ((sc = *s++) == 0)
+                    return -1;
+                count++;
+            } while (sc != c);
+        } while (strncmp(s, find, len) != 0);
+        count--;
+    }
+    return count;
+}
 
 bool iswhitespace(const char *s) {
     if (!s)
