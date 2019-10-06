@@ -4,6 +4,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Environment;
+import android.os.Process;
 import android.text.Editable;
 import android.text.style.EasyEditSpan;
 import android.util.Pair;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import euphoria.psycho.common.Activities;
 import euphoria.psycho.common.EditTexts;
 import euphoria.psycho.common.Strings;
+import euphoria.psycho.common.Threads;
 
 public class EditActivity extends Activities {
     private Database mDatabase;
@@ -143,9 +145,92 @@ public class EditActivity extends Activities {
         findViewById(R.id.format_title).setOnClickListener(v -> formatTitle());
         findViewById(R.id.format_line_spacing).setOnClickListener(v -> formatLineSpacing());
         findViewById(R.id.format_calculate).setOnClickListener(v -> formatCalculate());
+        findViewById(R.id.format_chinese_to_english).setOnClickListener(v -> formatChineseToEnglish());
+        findViewById(R.id.format_english_to_chinese).setOnClickListener(v -> formatEnglishToChinese());
 
-        mEditText.setText("123\n123\n123");
     }
+
+    private static final Object sLock = new Object();
+
+
+    private void formatEnglishToChinese() {
+        if (EditTexts.isWhitespace(mEditText)) return;
+        String line = EditTexts.selectLine(mEditText).trim();
+
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.youdaoDictionary(line, true, true);
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + result);
+                });
+            }
+        }).start();
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.baiduTranslate(line, true);
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + result);
+                });
+            }
+        }).start();
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.googleTranslate(line, true);
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + result);
+                });
+            }
+        }).start();
+    }
+
+    private void formatChineseToEnglish() {
+        if (EditTexts.isWhitespace(mEditText)) return;
+        String line = EditTexts.selectLine(mEditText).trim();
+
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.youdaoDictionary(line, true, false);
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + result);
+                });
+            }
+        }).start();
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.baiduTranslate(line, false);
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + result);
+                });
+            }
+        }).start();
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.googleTranslate(line, false);
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + result);
+                });
+            }
+        }).start();
+    }
+
 
     private void formatCalculate() {
         if (EditTexts.isWhitespace(mEditText)) return;

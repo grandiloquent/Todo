@@ -66,6 +66,18 @@
                 android:id="@+id/format_calculate"
                 style="@style/MenuButton"
                 android:src="@drawable/ic_action_explicit" />
+
+            <ImageButton
+                android:id="@+id/format_english_to_chinese"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_translate" />
+
+            <ImageButton
+                android:id="@+id/format_chinese_to_english"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_g_translate" />
+
+
         </LinearLayout>
     </HorizontalScrollView>
 

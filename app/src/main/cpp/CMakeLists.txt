@@ -12,8 +12,10 @@ add_library( # Sets the name of the library.
         native-lib.c
         utils_string.c
         utils_httpc.c
-        picohttpparser.c
-        youdao.c)
+        utils_url.c
+        youdao.c
+        google.c
+        baidu.c)
 
 add_library(markdown
         STATIC

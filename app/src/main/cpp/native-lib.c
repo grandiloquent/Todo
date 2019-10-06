@@ -10,6 +10,8 @@
 #include "markdown/html.h"
 #include "youdao.h"
 #include "tinyexpr/tinyexpr.h"
+#include "baidu.h"
+#include "google.h"
 
 JNIEXPORT jstring JNICALL
 Java_euphoria_psycho_todo_NativeUtils_removeRedundancy(JNIEnv *env, jclass type, jstring text_) {
@@ -169,16 +171,7 @@ Java_euphoria_psycho_todo_NativeUtils_renderMarkdown(JNIEnv *env, jclass type, j
 //
 //TLSDataParams *params = malloc(sizeof(TLSDataParams));
 //_mbedtls_client_init(params);
-JNIEXPORT jstring JNICALL
-Java_euphoria_psycho_todo_NativeUtils_youdaoDictionary(JNIEnv *env, jclass type, jstring word_) {
-    const char *word = (*env)->GetStringUTFChars(env, word_, 0);
 
-
-    youdao_query_dictionary(word);
-
-    (*env)->ReleaseStringUTFChars(env, word_, word);
-    return (*env)->NewStringUTF(env, "123");
-}
 
 JNIEXPORT jdouble JNICALL
 Java_euphoria_psycho_todo_NativeUtils_calculateExpr(JNIEnv *env, jclass type, jstring expr_) {
@@ -190,4 +183,82 @@ Java_euphoria_psycho_todo_NativeUtils_calculateExpr(JNIEnv *env, jclass type, js
     (*env)->ReleaseStringUTFChars(env, expr_, expr);
 
     return ret;
+}
+
+JNIEXPORT jstring JNICALL
+Java_euphoria_psycho_todo_NativeUtils_googleTranslate(JNIEnv *env, jclass type, jstring word_,
+                                                      jboolean englishToChinese) {
+    const char *word = (*env)->GetStringUTFChars(env, word_, 0);
+
+    // initialize the string
+    rapidstring s;
+    rs_init(&s);
+
+    // do translate
+    int ret = google_translate(word, &s, englishToChinese ? "zh" : "en");
+
+    // release the word pass from java
+    (*env)->ReleaseStringUTFChars(env, word_, word);
+
+    // check the result
+    if (ret != 0) {
+        rs_free(&s);
+        return NULL;
+    }
+    char *retStr = rs_data(&s);
+    rs_free(&s);
+    return (*env)->NewStringUTF(env, retStr);
+}
+
+JNIEXPORT jstring JNICALL
+Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, jstring word_,
+                                                     jboolean englishToChinese) {
+    const char *word = (*env)->GetStringUTFChars(env, word_, 0);
+
+    rapidstring s;
+    rs_init(&s);
+
+    int ret = baidu_query_dictionary(word, &s, englishToChinese ? "zh" : "en");
+
+    LOGE("----------------->");
+
+    // release the word pass from java
+    (*env)->ReleaseStringUTFChars(env, word_, word);
+    LOGE("----------------->");
+
+    // check the result
+    if (ret != 0) {
+        rs_free(&s);
+        return NULL;
+    }
+    char *retStr = rs_data(&s);
+    rs_free(&s);
+    return (*env)->NewStringUTF(env, retStr);
+}
+
+JNIEXPORT jstring JNICALL
+Java_euphoria_psycho_todo_NativeUtils_youdaoDictionary(JNIEnv *env, jclass type, jstring word_,
+                                                       jboolean translate,
+                                                       jboolean englishToChinese) {
+    const char *word = (*env)->GetStringUTFChars(env, word_, 0);
+    rapidstring s;
+    rs_init(&s);
+
+    int ret = youdao_query_dictionary(word, &s, translate ? 1 : 0,
+                                      englishToChinese ? "EN" : "zh-CHS",
+                                      englishToChinese ? "zh-CHS" : "EN"
+    );
+    (*env)->ReleaseStringUTFChars(env, word_, word);
+
+    if (ret != 0) {
+        rs_free(&s);
+        return NULL;
+    }
+
+    char *retStr = rs_data(&s);
+
+    rs_free(&s);
+
+    if (retStr == NULL || !strlen(retStr))return NULL;
+    return (*env)->NewStringUTF(env, retStr);
 }

@@ -15,7 +15,6 @@ public class CommonActivity extends Activities {
 
     @Override
     protected void initialize() {
-        NativeUtils.youdaoDictionary("penis");
     }
 
     @Override
