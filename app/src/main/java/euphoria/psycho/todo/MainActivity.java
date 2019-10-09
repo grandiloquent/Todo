@@ -33,6 +33,8 @@ public class MainActivity extends Activities implements OnItemClickListener {
     private static final int MENU_DOWNLOAD = 3;
     private static final int MENU_EDIT = 5;
     private static final int MENU_UPLOAD = 1;
+    private static final int MENU_SETTINGS = 6;
+
     private static final int REQUEST_CODE_EDIT = 679;
     private int mBackgroundId;
     private List<Pair<Integer, String>> mItems = new ArrayList<>();
@@ -216,6 +218,7 @@ public class MainActivity extends Activities implements OnItemClickListener {
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(0, MENU_UPLOAD, 0, "上传");
         menu.add(0, MENU_DOWNLOAD, 0, "下载");
+        menu.add(0, MENU_SETTINGS, 0, "设置");
 
         MenuItem addMenuItem = menu.add(0, MENU_ADD, 0, "添加");
         addMenuItem.setIcon(R.drawable.ic_action_add);
@@ -244,9 +247,19 @@ public class MainActivity extends Activities implements OnItemClickListener {
             case MENU_DOWNLOAD:
                 menuDownload();
                 return true;
+            case MENU_SETTINGS:
+                menuSettings();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private void menuSettings() {
+        Intent settings = new Intent(this, SettingsActivity.class);
+
+        startActivity(settings);
+    }
+
 
     @Override
     protected int requestCodePermissions() {
