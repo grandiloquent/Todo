@@ -56,7 +56,8 @@ Java_euphoria_psycho_todo_NativeUtils_renderMarkdown(JNIEnv *env, jclass type, j
     struct sd_callbacks callbacks;
     struct html_renderopt options;
     sdhtml_renderer(&callbacks, &options, HTML_RENDER_FLAGS);
-    struct sd_markdown *markdown = sd_markdown_new(MKDEXT_TABLES, 16, &callbacks, &options);
+    struct sd_markdown *markdown = sd_markdown_new(MKDEXT_TABLES | MKDEXT_AUTOLINK, 16, &callbacks,
+                                                   &options);
     struct buf *output_buf;
     output_buf = bufnew(128);
     //result = kno_make_string(NULL,output_buf->size,output_buf->data);
@@ -314,7 +315,7 @@ Java_euphoria_psycho_todo_NativeUtils_googleTranslate(JNIEnv *env, jclass type, 
 
 JNIEXPORT jstring JNICALL
 Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, jstring word_,
-                                                     jboolean englishToChinese)  {
+                                                     jboolean englishToChinese) {
     if (word_ == NULL)return NULL;
     const char *word = (*env)->GetStringUTFChars(env, word_, 0);
     const char *to = englishToChinese ? "zh" : "en";
@@ -435,7 +436,7 @@ Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, j
     body = body + 4;
     char *y = strstr(body, "\r\n");
     if (y != NULL) {
-        body = y ;
+        body = y;
     }
 
 //    body[indexof(body, "0\r\n")] = 0;

@@ -35,8 +35,19 @@ public class EditUtils {
         if (strings == null) {
             editText.getText().insert(editText.getSelectionStart(), "[]()");
         } else {
-            editText.getText().insert(editText.getSelectionStart(), "[](".concat(strings.toString().trim()).concat(")"));
+            editText.getText().replace(editText.getSelectionStart(),
+                    editText.getSelectionEnd(),
+                    "[".concat(EditTexts.getSelectionText(editText).toString().trim())
+                            .concat("](").concat(strings.toString().trim()).concat(")"));
         }
+    }
+
+    static void wrapSelection(EditText editText, String s) {
+
+
+        editText.getText().replace(editText.getSelectionStart(),
+                editText.getSelectionEnd(),
+                String.format("%s%s%s", s, EditTexts.getSelectionText(editText).toString().trim(), s));
     }
 
     public static int[] extendSelect(EditText editText) {
@@ -62,7 +73,7 @@ public class EditUtils {
 
         if (value.charAt(start) == '\n') start++;
 
-        if (end + 1 ==len) end = len;
+        if (end + 1 == len) end = len;
         return new int[]{
                 start, end
         };

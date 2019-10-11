@@ -18,6 +18,25 @@
                 style="@style/MenuButton"
                 android:src="@drawable/ic_action_title" />
 
+            <ImageButton
+                android:id="@+id/format_bold"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_format_bold" />
+
+            <ImageButton
+                android:id="@+id/format_italic"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_format_italic" />
+
+            <ImageButton
+                android:id="@+id/format_code"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_code" />
+
+            <ImageButton
+                android:id="@+id/format_functions"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_functions" />
 
             <ImageButton
                 android:id="@+id/format_line_spacing"

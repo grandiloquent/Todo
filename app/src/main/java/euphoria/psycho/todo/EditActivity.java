@@ -135,18 +135,53 @@ public class EditActivity extends Activities {
         setContentView(R.layout.activity_edit);
         mEditText = findViewById(R.id.edit);
         loadNote();
+        findViewById(R.id.format_bold).setOnClickListener(v -> formatBold());
+        findViewById(R.id.format_chinese_to_english).setOnClickListener(v -> formatChineseToEnglish());
+        findViewById(R.id.format_code).setOnClickListener(v -> formatCode());
+        findViewById(R.id.format_english_to_chinese).setOnClickListener(v -> formatEnglishToChinese());
+        findViewById(R.id.format_functions).setOnClickListener(v -> formatFunctions());
         findViewById(R.id.format_htm).setOnClickListener(v -> formatHtm());
         findViewById(R.id.format_indent_increase).setOnClickListener(v -> formatIndentIncrease());
+        findViewById(R.id.format_italic).setOnClickListener(v -> formatItalic());
+        findViewById(R.id.format_line_spacing).setOnClickListener(v -> formatLineSpacing());
         findViewById(R.id.format_link).setOnClickListener(v -> formatLink());
         findViewById(R.id.format_list).setOnClickListener(v -> formatList());
         findViewById(R.id.format_order).setOnClickListener(v -> formatOrder());
         findViewById(R.id.format_search).setOnClickListener(v -> formatSearch());
         findViewById(R.id.format_table).setOnClickListener(v -> formatTable());
         findViewById(R.id.format_title).setOnClickListener(v -> formatTitle());
-        findViewById(R.id.format_line_spacing).setOnClickListener(v -> formatLineSpacing());
-        findViewById(R.id.format_calculate).setOnClickListener(v -> formatCalculate());
-        findViewById(R.id.format_chinese_to_english).setOnClickListener(v -> formatChineseToEnglish());
-        findViewById(R.id.format_english_to_chinese).setOnClickListener(v -> formatEnglishToChinese());
+
+
+    }
+
+    private void formatItalic() {
+        EditUtils.wrapSelection(mEditText, "*");
+    }
+
+    private void formatCode() {
+        String s = EditTexts.getSelectionText(mEditText).toString().trim();
+        if (s.length() == 0
+                || s.contains("\n")) {
+            EditUtils.wrapSelection(mEditText, "\n```\n");
+
+        } else {
+            EditUtils.wrapSelection(mEditText, "`");
+
+        }
+    }
+
+    private void formatBold() {
+        EditUtils.wrapSelection(mEditText, "**");
+    }
+
+    private void formatFunctions() {
+        if (EditTexts.isWhitespace(mEditText)) return;
+
+        String text = EditTexts.selectLine(mEditText);
+
+        double ret = NativeUtils.calculateExpr(text);
+
+        mEditText.getText().insert(mEditText.getSelectionEnd(), String.format(" = %f", ret));
 
     }
 
@@ -231,17 +266,6 @@ public class EditActivity extends Activities {
         }).start();
     }
 
-
-    private void formatCalculate() {
-        if (EditTexts.isWhitespace(mEditText)) return;
-
-        String text = EditTexts.selectLine(mEditText);
-
-        double ret = NativeUtils.calculateExpr(text);
-
-        mEditText.getText().insert(mEditText.getSelectionEnd(), String.format(" = %f", ret));
-
-    }
 
 
     private void formatLineSpacing() {
