@@ -28,17 +28,17 @@ public class Database extends SQLiteOpenHelper {
 
     public void insert(Note note) {
         ContentValues values = new ContentValues();
-        values.put("content", note.Content);
+        values.put("Content", note.Content);
 
-        values.put("title", note.Title);
-        values.put("createAt", System.currentTimeMillis());
-        values.put("updateAt", System.currentTimeMillis());
+        values.put("Title", note.Title);
+        values.put("CreateAt", System.currentTimeMillis());
+        values.put("UpdateAt", System.currentTimeMillis());
 
-        getWritableDatabase().insert("strings", null, values);
+        getWritableDatabase().insert("Article", null, values);
     }
 
     public void delete(int id) {
-        getWritableDatabase().delete("strings", "_id = ?", new String[]{Integer.toString(id)});
+        getWritableDatabase().delete("Article", "Id = ?", new String[]{Integer.toString(id)});
 
     }
 
@@ -46,7 +46,7 @@ public class Database extends SQLiteOpenHelper {
     }
 
     public List<Pair<Integer, String>> fetchTitles() {
-        Cursor cursor = getReadableDatabase().rawQuery("select _id,title from strings order by updateAt desc", null);
+        Cursor cursor = getReadableDatabase().rawQuery("select ID,Title from Article order by UpdateAt desc", null);
         List<Pair<Integer, String>> strings = new ArrayList<>();
         while (cursor.moveToNext()) {
             strings.add(Pair.create(cursor.getInt(0), cursor.getString(1)));
@@ -56,7 +56,7 @@ public class Database extends SQLiteOpenHelper {
     }
 
     public Pair<String, String> fetchNote(int noteId) {
-        Cursor cursor = getReadableDatabase().rawQuery("select title,content from strings where _id =" + noteId, null);
+        Cursor cursor = getReadableDatabase().rawQuery("select Title,Content from Article where Id =" + noteId, null);
         Pair<String, String> pair = null;
         while (cursor.moveToNext()) {
             pair = Pair.create(
@@ -69,19 +69,25 @@ public class Database extends SQLiteOpenHelper {
 
     public void update(Note note) {
         ContentValues values = new ContentValues();
-        values.put("content", note.Content);
+        values.put("Content", note.Content);
 
-        values.put("title", note.Title);
-        values.put("updateAt", System.currentTimeMillis());
+        values.put("Title", note.Title);
+        values.put("UpdateAt", System.currentTimeMillis());
 
-        getWritableDatabase().update("strings", values, "_id = ?", new String[]{Integer.toString(note.Id)});
+        getWritableDatabase().update("Article", values, "Id = ?", new String[]{Integer.toString(note.Id)});
     }
 
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         // db.rawQuery("PRAGMA journal_mode=DELETE", null);
-        db.execSQL("create table if not exists strings (_id integer PRIMARY KEY AUTOINCREMENT,title text,content text,createAt integer,updateAt integer)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS \"Article\" (\n" +
+                "\"Id\" integer primary key autoincrement not null ,\n" +
+                "\"Title\" varchar ,\n" +
+                "\"Content\" varchar ,\n" +
+                "\"CreateAt\" bigint ,\n" +
+                "\"UpdateAt\" bigint )");
+        db.execSQL("CREATE UNIQUE INDEX \"index_title\" on \"Article\"(\"Title\")");
     }
 
     @Override

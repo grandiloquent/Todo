@@ -16,10 +16,7 @@ add_library( # Sets the name of the library.
         native-lib.c
         utils_string.c
         utils_httpc.c
-        utils_url.c
-        youdao.c
-        google.c
-        baidu.c)
+        utils_url.c)
 
 add_library(cJSON ${CMAKE_CURRENT_SOURCE_DIR}/cJSON/cJSON.c)
 add_library(tmd5 ${CMAKE_CURRENT_SOURCE_DIR}/tmd5/tmd5.c)

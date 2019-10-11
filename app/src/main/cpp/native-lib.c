@@ -13,16 +13,24 @@
 #include "log.h"
 #include "markdown/markdown.h"
 #include "markdown/html.h"
-#include "youdao.h"
 #include "tinyexpr/tinyexpr.h"
-#include "baidu.h"
-#include "google.h"
 #include "cJSON/cJSON.h"
 #include "tmd5/tmd5.h"
+#include "macros.h"
+#include <unistd.h>
+#include <fcntl.h>
+#include <netinet/tcp.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <time.h>
+#include <errno.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 
+#define BAI_APP_ID "20190312000276185"
 static const char HEX_ARRAY[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                                  'A', 'B', 'C', 'D', 'E', 'F'};
+
 JNIEXPORT jstring JNICALL
 Java_euphoria_psycho_todo_NativeUtils_removeRedundancy(JNIEnv *env, jclass type, jstring text_) {
     const char *text = (*env)->GetStringUTFChars(env, text_, 0);
@@ -198,53 +206,268 @@ Java_euphoria_psycho_todo_NativeUtils_calculateExpr(JNIEnv *env, jclass type, js
 JNIEXPORT jstring JNICALL
 Java_euphoria_psycho_todo_NativeUtils_googleTranslate(JNIEnv *env, jclass type, jstring word_,
                                                       jboolean englishToChinese) {
+    if (word_ == NULL)return NULL;
     const char *word = (*env)->GetStringUTFChars(env, word_, 0);
+    const char *to = englishToChinese ? "zh" : "en";
 
-    // initialize the string
-    rapidstring s;
-    rs_init(&s);
+    SOCKET_INIT("translate.google.cn", "80");
+    URL_ENCODE(word);
 
-    // do translate
-    int ret = google_translate(word, &s, englishToChinese ? "zh" : "en");
 
-    // release the word pass from java
-    (*env)->ReleaseStringUTFChars(env, word_, word);
+    const char *url_format = "/translate_a/single?client=gtx&sl=auto&tl=%s&dt=t&dt=bd&ie=UTF-8&oe=UTF-8&dj=1&source=icon&q=%s";
 
-    // check the result
-    if (ret != 0) {
-        rs_free(&s);
+    size_t buf_path_len = strlen(buf_encode) + strlen(url_format) + 10;
+    char buf_path[buf_path_len];
+    memset(buf_path, 0, buf_path_len);
+
+    snprintf(buf_path, buf_path_len,
+             url_format, to, buf_encode);
+
+    size_t buf_header_len = strlen(buf_path) + 100;
+    char buf_header[buf_header_len];
+    memset(buf_header, 0, buf_header_len);
+    strcat(buf_header, "GET ");
+    strcat(buf_header, buf_path);
+    strcat(buf_header, " HTTP/1.1\r\n");
+    strcat(buf_header, "Accept: application/json, text/javascript, */*; q=0.01\r\n");
+    strcat(buf_header, "Host: translate.google.cn\r\n");
+    strcat(buf_header,
+           "User-Agent: Mozilla/4.0\r\n");
+    strcat(buf_header, "\r\n");
+
+
+    SEND_HEADER();
+
+    size_t buf_body_len = 1024 << 2, buf_body_read_len = 0, header_end = 0;
+    char buf_body[buf_body_len];
+    memset(buf_body, 0, buf_body_len);
+    do {
+
+
+        while ((ret = read(fd, buf_body + buf_body_read_len, buf_body_len - buf_body_read_len)) ==
+               -1 && errno == EINTR);
+
+        if (ret <= 0) {
+            close(fd);
+            (*env)->ReleaseStringUTFChars(env, word_, word);
+            return NULL;
+        }
+
+
+        if (indexof(buf_body, "0\r\n\r\n") != -1) {
+            break;
+        }
+//        LOGE("%d %d", ret, buf_body_read_len);
+//
+        //if (indexof(buf_body, "0\r\n\r\n") != -1) { break; }
+        if (indexof(buf_body, "200 OK") == -1) {
+            close(fd);
+            (*env)->ReleaseStringUTFChars(env, word_, word);
+            return NULL;
+        }
+
+        buf_body_read_len += ret;
+
+
+    } while (1);
+
+
+    char *y = strstr(buf_body, "\r\n\r\n");
+    if (y == NULL || strlen(y) <= 4) {
+        close(fd);
+        (*env)->ReleaseStringUTFChars(env, word_, word);
         return NULL;
     }
-    char *retStr = rs_data(&s);
-    rs_free(&s);
-    return (*env)->NewStringUTF(env, retStr);
+    y = y + 4;
+    char *body = strstr(y, "\r\n");
+    if (body == NULL) {
+        close(fd);
+        (*env)->ReleaseStringUTFChars(env, word_, word);
+        return NULL;
+    };
+
+    cJSON *json = cJSON_Parse(body);
+    if (json == NULL) {
+        close(fd);
+        (*env)->ReleaseStringUTFChars(env, word_, word);
+        return NULL;
+    }
+
+
+    cJSON *sentences = cJSON_GetObjectItem(json, "sentences");
+    if (sentences == NULL) {
+        cJSON_Delete(json);
+        close(fd);
+        (*env)->ReleaseStringUTFChars(env, word_, word);
+        return NULL;
+    }
+    const cJSON *t = NULL;
+    memset(buf_body, 0, buf_body_len);
+
+    cJSON_ArrayForEach(t, sentences) {
+        strcat(buf_body, cJSON_GetObjectItem(t, "trans")->valuestring);
+    }
+    (*env)->ReleaseStringUTFChars(env, word_, word);
+    close(fd);
+    return (*env)->NewStringUTF(env, buf_body);
 }
 
 JNIEXPORT jstring JNICALL
 Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, jstring word_,
-                                                     jboolean englishToChinese) {
+                                                     jboolean englishToChinese)  {
+    if (word_ == NULL)return NULL;
     const char *word = (*env)->GetStringUTFChars(env, word_, 0);
+    const char *to = englishToChinese ? "zh" : "en";
+    //int ret = baidu_query_dictionary(word, &s, englishToChinese ? "zh" : "en");
 
-    rapidstring s;
-    rs_init(&s);
+    SOCKET_INIT("api.fanyi.baidu.com", "80");
+    URL_ENCODE(word);
 
-    int ret = baidu_query_dictionary(word, &s, englishToChinese ? "zh" : "en");
+    MAKE_SALT();
 
-    LOGE("----------------->");
+    size_t md5_len = strlen(BAI_APP_ID) + strlen(word) + strlen(BAIDU_SECRET) + 12;
+    char md5_buf[md5_len];
+    memset(md5_buf, 0, md5_len);
 
-    // release the word pass from java
-    (*env)->ReleaseStringUTFChars(env, word_, word);
-    LOGE("----------------->");
+    strcat(md5_buf, BAI_APP_ID);
+    strcat(md5_buf, word);
+    strcat(md5_buf, salt_buf);
+    strcat(md5_buf, BAIDU_SECRET);
+    md5_buf[md5_len] = 0;
+    char md5[33];
+    MD5_CTX md5_ctx;
+    MD5Init(&md5_ctx);
+    MD5Update(&md5_ctx, md5_buf, strlen(md5_buf));
+    MD5Final(&md5_ctx);
 
-    // check the result
-    if (ret != 0) {
-        rs_free(&s);
+    snprintf(md5, 33, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+             md5_ctx.digest[0],
+             md5_ctx.digest[1], md5_ctx.digest[2], md5_ctx.digest[3], md5_ctx.digest[4],
+             md5_ctx.digest[5], md5_ctx.digest[6],
+             md5_ctx.digest[7], md5_ctx.digest[8], md5_ctx.digest[9], md5_ctx.digest[10],
+             md5_ctx.digest[11],
+             md5_ctx.digest[12], md5_ctx.digest[13], md5_ctx.digest[14], md5_ctx.digest[15]);
+
+    const char *url_format = "/api/trans/vip/translate?q=%s&from=auto&to=%s&appid=%s&salt=%s&sign=%s";
+    size_t buf_path_len =
+            strlen(url_format) + strlen(buf_encode) +
+            strlen(to) + strlen(BAI_APP_ID) + strlen(salt_buf) +
+            strlen(md5) + 10;
+
+    char buf_path[buf_path_len];
+    memset(buf_path, 0, buf_path_len);
+    snprintf(buf_path, buf_path_len, url_format, buf_encode, to, BAI_APP_ID, salt_buf, md5);
+
+    size_t header_buf_len = buf_path_len + 128;
+    char buf_header[header_buf_len];
+    memset(buf_header, 0, header_buf_len);
+    strcat(buf_header, "GET ");
+    strcat(buf_header, buf_path);
+    strcat(buf_header, " HTTP/1.1\r\n");
+    strcat(buf_header, "Accept: application/json, text/javascript, */*; q=0.01\r\n");
+    strcat(buf_header,
+           "User-Agent: Mozilla/4.0\r\n");
+    strcat(buf_header, "Host: api.fanyi.baidu.com\r\n");
+    strcat(buf_header, "\r\n");
+
+    SEND_HEADER();
+
+    size_t buf_body_len = 1024 << 2, buf_body_read_len = 0, chunked = 0,
+            content_length = 0;
+    char buf_body[buf_body_len];
+    memset(buf_body, 0, buf_body_len);
+    do {
+
+
+        while ((ret = read(fd, buf_body + buf_body_read_len, buf_body_len - buf_body_read_len)) ==
+               -1 && errno == EINTR);
+
+        if (!chunked && indexof(buf_body, "Transfer-Encoding: chunked") != -1)chunked = 1;
+        if (!content_length &&
+            indexof(buf_body, "Content-Length: ") != -1) {
+            char tmp[10];
+
+            for (int i = indexof(buf_body, "Content-Length: ") + strlen("Content-Length: ")
+                 , j = i + 10, c = 0;
+                 i < j; ++i) {
+                if (buf_body[i] == '\r') {
+                    tmp[i] = 0;
+                    break;
+                }
+                tmp[c++] = buf_body[i];
+            }
+
+            content_length = strtol(tmp, NULL, 10);
+        }
+        if (ret <= 0) {
+            close(fd);
+            (*env)->ReleaseStringUTFChars(env, word_, word);
+            return NULL;
+        }
+
+
+        if (chunked && indexof(buf_body, "0\r\n\r\n") != -1) {
+            break;
+        }
+        if (content_length && strlen(strstr(buf_body, "\r\n\r\n")) + 4 >= content_length)break;
+//        LOGE("%d %d", ret, buf_body_read_len);
+//
+        //if (indexof(buf_body, "0\r\n\r\n") != -1) { break; }
+        if (indexof(buf_body, "200 OK") == -1) {
+            close(fd);
+            (*env)->ReleaseStringUTFChars(env, word_, word);
+            return NULL;
+        }
+
+        buf_body_read_len += ret;
+
+
+    } while (1);
+
+    char *body = strstr(buf_body, "\r\n\r\n");
+
+
+    if (body == NULL) {
+        close(fd);
+        (*env)->ReleaseStringUTFChars(env, word_, word);
+        return NULL;
+    };
+    body = body + 4;
+    char *y = strstr(body, "\r\n");
+    if (y != NULL) {
+        body = y ;
+    }
+
+//    body[indexof(body, "0\r\n")] = 0;
+    cJSON *json = cJSON_Parse(body);
+    if (json == NULL) {
+        close(fd);
+        (*env)->ReleaseStringUTFChars(env, word_, word);
         return NULL;
     }
-    char *retStr = rs_data(&s);
-    rs_free(&s);
-    return (*env)->NewStringUTF(env, retStr);
+
+    cJSON *trans_result = cJSON_GetObjectItem(json, "trans_result");
+
+    if (trans_result == NULL) {
+        close(fd);
+        (*env)->ReleaseStringUTFChars(env, word_, word);
+        cJSON_Delete(json);
+        return NULL;
+    }
+    cJSON *t = NULL;
+    memset(buf_body, 0, buf_body_len);
+
+    cJSON_ArrayForEach(t, trans_result) {
+        strcat(buf_body, cJSON_GetObjectItem(t, "dst")->valuestring);
+        strcat(buf_body, "\n");
+    }
+
+    close(fd);
+    (*env)->ReleaseStringUTFChars(env, word_, word);
+    cJSON_Delete(json);
+    return (*env)->NewStringUTF(env, buf_body);
 }
+
 
 JNIEXPORT jstring JNICALL
 Java_euphoria_psycho_todo_NativeUtils_youdaoDictionary(JNIEnv *env, jclass type, jstring word_,
