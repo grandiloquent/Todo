@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Selection;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -30,7 +31,46 @@ import euphoria.psycho.common.Files;
 import euphoria.psycho.common.Markdowns;
 import euphoria.psycho.common.Strings;
 
+import static euphoria.psycho.common.EditTexts.detectStrings;
+
 public class EditUtils {
+    private static void cutLine(EditActivity activity) {
+        CharSequence value = EditTexts.cutStrings(activity.getEditText());//EditTexts.cutLine(activity.getEditText());
+        if (!Strings.isNullOrWhiteSpace(value)) {
+            activity.getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, value.toString().trim()));
+        }
+    }
+
+    public static CharSequence cutStrings(EditText editText) {
+        int[] range = detectStrings(editText);
+        if (range.length == 0) return null;
+        CharSequence result = editText.getText().subSequence(range[0], range[1]);
+        editText.getText().replace(range[0], range[1], Strings.join("\n\n", result.toString().split("[\r\n]+")));
+        return result;
+    }
+
+    public static void split(EditText editText) {
+        Editable text = editText.getText();
+        int len = text.length();
+        if (len == 0) return;
+        int start = editText.getSelectionStart();
+        int end = editText.getSelectionEnd();
+        if (start == len || text.charAt(start) == '\n') {
+            start--;
+        }
+        if (end < len && text.charAt(end) == '\n' && end - 1 > -1) {
+            end--;
+        }
+        while (start - 1 > -1 && text.charAt(start - 1) != '\n') start--;
+        while (start - 1 > -1 && Character.isWhitespace(text.charAt(start - 1))) start--;
+        while (end + 1 < len && text.charAt(end + 1) != '\n') end++;
+        while (end + 1 < len && Character.isWhitespace(text.charAt(end + 1))) end++;
+        if (end + 1 < len) end++;
+        CharSequence charSequence = editText.getText().subSequence(start, end);
+        editText.getText().replace(start, end, Strings.join(".\n\n", charSequence.toString().split("[\\.\r\n]+\\s*")));
+
+    }
+
     static void addLink(EditText editText, ClipboardManager clipboardManager) {
 
         CharSequence strings = Contexts.getClipboardString(clipboardManager);
@@ -168,24 +208,79 @@ public class EditUtils {
 
     }
 
+
     static void formatList(EditActivity activity) {
 
+        EditText editText = activity.getEditText();
 
-        int[] position = extendSelect(activity.getEditText());
-        activity.getEditText().setSelection(position[0], position[1]);
-        String value = activity.getEditText().getText().toString().substring(position[0], position[1]).trim();
-        String[] lines = value.split("\n");
-        StringBuilder sb = new StringBuilder();
-        for (String l : lines) {
-            if (Strings.isNullOrWhiteSpace(l)) continue;
-            if (l.startsWith("* ")) {
-                sb.append(l.substring(2)).append('\n');
-            } else {
+        int saved = editText.getSelectionStart();
 
-                sb.append("* ").append(l).append('\n');
+        int curLine = getCurrentCursorLine(editText);
+        if (curLine == -1) return;
+
+        String[] lines = editText.getText().toString().split("\n");
+
+        int start = curLine;
+
+        int startLine = 0;
+        int end = curLine;
+        int endLine = lines.length - 1;
+        while (--start > -1) {
+            if (Strings.isNullOrWhiteSpace(lines[start])) {
+                startLine = start;
+                break;
             }
         }
-        activity.getEditText().getText().replace(activity.getEditText().getSelectionStart(), activity.getEditText().getSelectionEnd(), sb.toString());
+        if (startLine != 0) {
+            startLine++;
+        }
+
+        while (end++ < lines.length - 1) {
+            if (Strings.isNullOrWhiteSpace(lines[end])) {
+                endLine = end;
+                break;
+            }
+        }
+        if (endLine != lines.length - 1) {
+            endLine--;
+        }
+
+        String[] sortLines = Arrays.copyOfRange(lines, startLine, endLine + 1);
+
+        for (int i = 0; i < sortLines.length; i++) {
+            if (sortLines[i].startsWith("* ")) {
+                sortLines[i] = sortLines[i].substring(2);
+            } else {
+
+                sortLines[i] = "* " + sortLines[i];
+
+            }
+        }
+        for (int i = startLine, j = 0; i <= endLine; i++, j++) {
+            lines[i] = sortLines[j];
+        }
+        editText.setText(Strings.join("\n", lines));
+
+        if (saved > editText.getText().length())
+            saved = editText.getText().length();
+        editText.setSelection(saved);
+        //        int[] position = extendSelect(activity.getEditText());
+//        activity.getEditText().setSelection(position[0], position[1]);
+//        String value = activity.getEditText().getText().toString().substring(position[0], position[1]).trim();
+//
+//        if (Strings.isNullOrWhiteSpace(value)) return;
+//        else {
+//
+//            Contexts.setText(activity.getClipboardManager(), value);
+//        }
+//        String[] lines = value.split("\n");
+//        Collator collator = Collator.getInstance(Locale.CHINA);
+//        Arrays.sort(lines, (o1, o2) -> collator.compare(o1.trim(), o2.trim()));
+//        StringBuilder sb = new StringBuilder();
+//        for (String l : lines) {
+//            sb.append(l).append('\n');
+//        }
+//        activity.getEditText().getText().replace(activity.getEditText().getSelectionStart(), activity.getEditText().getSelectionEnd(), sb.toString());
 
     }
 
@@ -231,7 +326,8 @@ public class EditUtils {
             lines[i] = sortLines[j];
         }
         editText.setText(Strings.join("\n", lines));
-
+        if (saved > editText.getText().length())
+            saved = editText.getText().length();
         editText.setSelection(saved);
         //        int[] position = extendSelect(activity.getEditText());
 //        activity.getEditText().setSelection(position[0], position[1]);
@@ -294,7 +390,8 @@ public class EditUtils {
             lines[i] = sortLines[j];
         }
         editText.setText(Strings.join("\n", lines));
-
+        if (saved > editText.getText().length())
+            saved = editText.getText().length();
         editText.setSelection(saved);
 
 
@@ -373,6 +470,91 @@ public class EditUtils {
 
         }
         return start;
+    }
+
+    public static void selectWholeLine(EditText editText) {
+        if (EditTexts.isWhitespace(editText)) {
+            return;
+        }
+        int start = editText.getSelectionStart();
+        int end = editText.getSelectionEnd();
+        CharSequence text = editText.getText();
+        int len = editText.getText().length();
+
+        while (start - 1 > -1 && text.charAt(start - 1) != '\n') {
+            start--;
+        }
+        while (end + 1 < len && text.charAt(++end) != '\n') ;
+        if (end + 1 == len) end++;
+        editText.setSelection(start, end);
+
+
+
+        /*
+         当光标在最尾端时
+         editText.getSelectionStart() = editText.getText().length()
+
+         */
+
+    }
+
+    public static void selectWholeLines(EditText editText) {
+        if (EditTexts.isWhitespace(editText)) {
+            return;
+        }
+        int start = editText.getSelectionStart();
+        int end = editText.getSelectionEnd();
+        CharSequence text = editText.getText();
+        int len = editText.getText().length();
+
+        while (start - 1 > -1 && text.charAt(start - 1) != '\n') {
+            start--;
+        }
+        int startTmp;
+
+        do {
+            startTmp = start - 1;
+
+            while (startTmp - 1 > -1 && text.charAt(startTmp - 1) != '\n') {
+                startTmp--;
+            }
+            if (startTmp < 0 || startTmp == start) break;
+            if (text.subSequence(startTmp, start).toString().trim().length() == 0) {
+                break;
+            }
+            start = startTmp;
+        } while (startTmp > -1);
+
+
+        while (end + 1 < len && text.charAt(++end) != '\n') ;
+
+        int endTmp;
+
+        do {
+            endTmp = end;
+
+            while (endTmp + 1 < len && text.charAt(endTmp + 1) != '\n') {
+                endTmp++;
+            }
+            if (endTmp >= len || endTmp == end) break;
+            if (text.subSequence(end, endTmp).toString().trim().length() == 0) {
+                break;
+            }
+            end = endTmp;
+        } while (endTmp < len);
+
+
+        if (end + 1 == len) end++;
+        editText.setSelection(start, end);
+
+
+
+        /*
+         当光标在最尾端时
+         editText.getSelectionStart() = editText.getText().length()
+
+         */
+
     }
 
     static void replace(EditActivity activity) {

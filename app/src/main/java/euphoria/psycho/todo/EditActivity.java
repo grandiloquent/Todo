@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 
 import euphoria.psycho.common.Activities;
+import euphoria.psycho.common.Contexts;
 import euphoria.psycho.common.EditTexts;
 import euphoria.psycho.common.Strings;
 import euphoria.psycho.common.Threads;
@@ -155,8 +156,17 @@ public class EditActivity extends Activities {
         findViewById(R.id.format_search).setOnClickListener(v -> formatSearch());
         findViewById(R.id.format_table).setOnClickListener(v -> formatTable());
         findViewById(R.id.format_title).setOnClickListener(v -> formatTitle());
+        findViewById(R.id.format_cut).setOnClickListener(v -> formatCut());
 
 
+        mEditText.setText(Contexts.getText());
+    }
+
+    private void formatCut() {
+
+        CharSequence result = EditTexts.deleteLineWithWhitespace(mEditText);
+        if (Strings.isNullOrWhiteSpace(result)) return;
+        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, result));
     }
 
     private void formatItalic() {
@@ -275,8 +285,10 @@ public class EditActivity extends Activities {
 
     private void formatLineSpacing() {
 
+
         if (!EditTexts.isWhitespace(mEditText)) {
-            mEditText.setText(NativeUtils.removeRedundancy(mEditText.getText().toString().trim().replaceAll("\r+", "")));
+            EditUtils.split(mEditText);
+            // mEditText.setText(NativeUtils.removeRedundancy(mEditText.getText().toString().trim().replaceAll("\r+", "")));
         }
     }
 

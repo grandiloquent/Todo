@@ -43,6 +43,7 @@ public class EditTexts {
         return result;
     }
 
+
     public static CharSequence deleteExtend(EditText editText) {
         Editable text = editText.getText();
         int len = text.length();
