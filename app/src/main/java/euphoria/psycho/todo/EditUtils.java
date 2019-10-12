@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
 import android.text.Editable;
+import android.text.Layout;
+import android.text.Selection;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -50,33 +52,83 @@ public class EditUtils {
                 String.format("%s%s%s", s, EditTexts.getSelectionText(editText).toString().trim(), s));
     }
 
+    public static int getCurrentCursorLine(EditText editText) {
+        int selectionStart = Selection.getSelectionStart(editText.getText());
+        Layout layout = editText.getLayout();
+
+        if (!(selectionStart == -1)) {
+            return layout.getLineForOffset(selectionStart);
+        }
+
+        return -1;
+    }
+
     public static int[] extendSelect(EditText editText) {
-        String value = editText.getText().toString();
-        if (value.length() == 0) {
-            return new int[2];
-        }
-        int len = value.length();
 
-        int start = editText.getSelectionStart();
-        int end = editText.getSelectionEnd();
-        if (start == end) {
-            start--;
-        }
-        while (start > 0 && !(value.charAt(start) == '\n' && value.charAt(start - 1) == '\n')) {
-            start--;
-        }
-        len = len - 1;
-        while (end < len && !(value.charAt(end) == '\n' && value.charAt(end + 1) == '\n')) {
-            end++;
 
+        int curLine = getCurrentCursorLine(editText);
+        if (curLine == -1) return new int[2];
+
+        String[] lines = editText.getText().toString().split("\n");
+
+        int start = curLine;
+        int startLine = 0;
+        int end = curLine;
+        int endLine = lines.length - 1;
+        while (--start > -1) {
+            if (Strings.isNullOrWhiteSpace(lines[start])) {
+                startLine = start;
+            }
         }
 
-        if (value.charAt(start) == '\n') start++;
-
-        if (end + 1 == len) end = len;
-        return new int[]{
-                start, end
-        };
+        while (end++ < lines.length - 1) {
+            if (Strings.isNullOrWhiteSpace(lines[end])) {
+                endLine = end;
+            }
+        }
+        start = 0;
+        for (int i = 0; i < startLine; i++) {
+            start += lines[i].length() + 1;
+        }
+        end = start;
+        for (int i = startLine; i < endLine; i++) {
+            end += lines[i].length() + 1;
+        }
+        end += lines[endLine - 1].length();
+        return new int[]{start, end};
+        //        String value = editText.getText().toString();
+//        if (value.length() == 0) {
+//            return new int[2];
+//        }
+//        int len = value.length();
+//
+//        int start = editText.getSelectionStart();
+//        int end = editText.getSelectionEnd();
+//        if (start == end) {
+//            start--;
+//        }
+//        while (start > 0 && !(value.charAt(start) == '\n' &&
+//                (value.charAt(start - 1) == '\n'
+//                        || value.charAt(start - 1) == '\r'
+//                ))) {
+//            start--;
+//        }
+//        len = len - 1;
+//        while (end < len && !(value.charAt(end) == '\n' && (
+//                value.charAt(end + 1) == '\n'
+//                        || value.charAt(end + 1) == '\r'
+//
+//        ))) {
+//            end++;
+//
+//        }
+//
+//        if (value.charAt(start) == '\n') start++;
+//
+//        if (end + 1 == len) end = len;
+//        return new int[]{
+//                start, end
+//        };
 
     }
 
@@ -139,23 +191,112 @@ public class EditUtils {
 
     static void formatOrder(EditActivity activity) {
 
+        EditText editText = activity.getEditText();
 
-        int[] position = extendSelect(activity.getEditText());
-        activity.getEditText().setSelection(position[0], position[1]);
-        String value = activity.getEditText().getText().toString().substring(position[0], position[1]).trim();
-        String[] lines = value.split("\n");
-        Collator collator = Collator.getInstance(Locale.CHINA);
-        Arrays.sort(lines, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                return collator.compare(o1.trim(), o2.trim());
+        int saved = editText.getSelectionStart();
+
+        int curLine = getCurrentCursorLine(editText);
+        if (curLine == -1) return;
+
+        String[] lines = editText.getText().toString().split("\n");
+
+        int start = curLine;
+        int startLine = 0;
+        int end = curLine;
+        int endLine = lines.length - 1;
+        while (--start > -1) {
+            if (Strings.isNullOrWhiteSpace(lines[start])) {
+                startLine = start;
+                break;
             }
-        });
-        StringBuilder sb = new StringBuilder();
-        for (String l : lines) {
-            sb.append(l).append('\n');
         }
-        activity.getEditText().getText().replace(activity.getEditText().getSelectionStart(), activity.getEditText().getSelectionEnd(), sb.toString());
+        if (startLine != 0) {
+            startLine++;
+        }
+
+        while (end++ < lines.length - 1) {
+            if (Strings.isNullOrWhiteSpace(lines[end])) {
+                endLine = end;
+                break;
+            }
+        }
+        if (endLine != lines.length - 1) {
+            endLine--;
+        }
+
+        String[] sortLines = Arrays.copyOfRange(lines, startLine, endLine + 1);
+        Collator collator = Collator.getInstance(Locale.CHINA);
+        Arrays.sort(sortLines, (o1, o2) -> collator.compare(o1.trim(), o2.trim()));
+        for (int i = startLine, j = 0; i <= endLine; i++, j++) {
+            lines[i] = sortLines[j];
+        }
+        editText.setText(Strings.join("\n", lines));
+
+        editText.setSelection(saved);
+        //        int[] position = extendSelect(activity.getEditText());
+//        activity.getEditText().setSelection(position[0], position[1]);
+//        String value = activity.getEditText().getText().toString().substring(position[0], position[1]).trim();
+//
+//        if (Strings.isNullOrWhiteSpace(value)) return;
+//        else {
+//
+//            Contexts.setText(activity.getClipboardManager(), value);
+//        }
+//        String[] lines = value.split("\n");
+//        Collator collator = Collator.getInstance(Locale.CHINA);
+//        Arrays.sort(lines, (o1, o2) -> collator.compare(o1.trim(), o2.trim()));
+//        StringBuilder sb = new StringBuilder();
+//        for (String l : lines) {
+//            sb.append(l).append('\n');
+//        }
+//        activity.getEditText().getText().replace(activity.getEditText().getSelectionStart(), activity.getEditText().getSelectionEnd(), sb.toString());
+
+    }
+
+    static void formatReorder(EditActivity activity) {
+        EditText editText = activity.getEditText();
+
+        int saved = editText.getSelectionStart();
+
+        int curLine = getCurrentCursorLine(editText);
+        if (curLine == -1) return;
+
+        String[] lines = editText.getText().toString().split("\n");
+
+        int start = curLine;
+        int startLine = 0;
+        int end = curLine;
+        int endLine = lines.length - 1;
+        while (--start > -1) {
+            if (Strings.isNullOrWhiteSpace(lines[start])) {
+                startLine = start;
+                break;
+            }
+        }
+        if (startLine != 0) {
+            startLine++;
+        }
+
+        while (end++ < lines.length - 1) {
+            if (Strings.isNullOrWhiteSpace(lines[end])) {
+                endLine = end;
+                break;
+            }
+        }
+        if (endLine != lines.length - 1) {
+            endLine--;
+        }
+
+        String[] sortLines = Arrays.copyOfRange(lines, startLine, endLine + 1);
+        Collator collator = Collator.getInstance(Locale.CHINA);
+        Arrays.sort(sortLines, (o1, o2) -> collator.compare(Strings.substringAfterLast(o1.trim(), '/'), Strings.substringAfterLast(o2.trim(), '/')));
+        for (int i = startLine, j = 0; i <= endLine; i++, j++) {
+            lines[i] = sortLines[j];
+        }
+        editText.setText(Strings.join("\n", lines));
+
+        editText.setSelection(saved);
+
 
     }
 

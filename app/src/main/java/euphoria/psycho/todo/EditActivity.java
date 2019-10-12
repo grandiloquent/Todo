@@ -61,6 +61,10 @@ public class EditActivity extends Activities {
         EditUtils.formatOrder(this);
     }
 
+    private void formatReorder() {
+        EditUtils.formatReorder(this);
+    }
+
     private void formatSearch() {
 //        NativeUtils.renderMarkdown(mEditText.getText().toString(),
 //                new File(Environment.getExternalStorageDirectory(), "1.htm").getAbsolutePath());
@@ -147,6 +151,7 @@ public class EditActivity extends Activities {
         findViewById(R.id.format_link).setOnClickListener(v -> formatLink());
         findViewById(R.id.format_list).setOnClickListener(v -> formatList());
         findViewById(R.id.format_order).setOnClickListener(v -> formatOrder());
+        findViewById(R.id.format_reorder).setOnClickListener(v -> formatReorder());
         findViewById(R.id.format_search).setOnClickListener(v -> formatSearch());
         findViewById(R.id.format_table).setOnClickListener(v -> formatTable());
         findViewById(R.id.format_title).setOnClickListener(v -> formatTitle());
@@ -199,18 +204,19 @@ public class EditActivity extends Activities {
                 Threads.postOnUiThread(() -> {
                     mEditText.getText().insert(
                             mEditText.getSelectionEnd(),
-                            "\n" + result);
+                            "\n" + (result == null ? "youdaoDictionary" : result));
                 });
             }
         }).start();
         new Thread(() -> {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
             String result = NativeUtils.baiduTranslate(line, true);
+
             synchronized (sLock) {
                 Threads.postOnUiThread(() -> {
                     mEditText.getText().insert(
                             mEditText.getSelectionEnd(),
-                            "\n" + result);
+                            "\n" + (result == null ? "baiduTranslate" : result));
                 });
             }
         }).start();
@@ -221,7 +227,7 @@ public class EditActivity extends Activities {
                 Threads.postOnUiThread(() -> {
                     mEditText.getText().insert(
                             mEditText.getSelectionEnd(),
-                            "\n" + result);
+                            "\n" + (result == null ? "googleTranslate" : result));
                 });
             }
         }).start();
@@ -238,7 +244,7 @@ public class EditActivity extends Activities {
                 Threads.postOnUiThread(() -> {
                     mEditText.getText().insert(
                             mEditText.getSelectionEnd(),
-                            "\n" + result);
+                            "\n" + (result == null ? "youdaoDictionary" : result));
                 });
             }
         }).start();
@@ -249,7 +255,7 @@ public class EditActivity extends Activities {
                 Threads.postOnUiThread(() -> {
                     mEditText.getText().insert(
                             mEditText.getSelectionEnd(),
-                            "\n" + result);
+                            "\n" + (result == null ? "baiduTranslate" : result));
                 });
             }
         }).start();
@@ -260,18 +266,17 @@ public class EditActivity extends Activities {
                 Threads.postOnUiThread(() -> {
                     mEditText.getText().insert(
                             mEditText.getSelectionEnd(),
-                            "\n" + result);
+                            "\n" + (result == null ? "googleTranslate" : result));
                 });
             }
         }).start();
     }
 
 
-
     private void formatLineSpacing() {
 
         if (!EditTexts.isWhitespace(mEditText)) {
-            mEditText.setText(NativeUtils.removeRedundancy(mEditText.getText().toString().trim()));
+            mEditText.setText(NativeUtils.removeRedundancy(mEditText.getText().toString().trim().replaceAll("\r+", "")));
         }
     }
 

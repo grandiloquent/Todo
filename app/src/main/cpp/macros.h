@@ -1,7 +1,11 @@
 #ifndef __MACROS_H__
 #define __MACROS_H__
 
-
+#define ENSURE_NOT_BIG()  if (buf_body_read_len >= buf_body_len) {    \
+            close(fd);    \
+            (*env)->ReleaseStringUTFChars(env, word_, word);    \
+            return (*env)->NewStringUTF(env, "Too big.");;    \
+        }
 #define  BAIDU_SECRET "sdK6QhtFE64Qm0ID_SjG"
 
 #define SOCKET_INIT(X, Y) int ret, fd;    \

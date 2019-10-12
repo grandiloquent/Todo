@@ -69,7 +69,10 @@
                 android:id="@+id/format_order"
                 style="@style/MenuButton"
                 android:src="@drawable/ic_action_reorder" />
-
+            <ImageButton
+                android:id="@+id/format_reorder"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_reorder" />
             <ImageButton
                 android:id="@+id/format_search"
                 style="@style/MenuButton"

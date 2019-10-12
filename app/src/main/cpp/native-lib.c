@@ -243,6 +243,7 @@ Java_euphoria_psycho_todo_NativeUtils_googleTranslate(JNIEnv *env, jclass type, 
     char buf_body[buf_body_len];
     memset(buf_body, 0, buf_body_len);
     do {
+        ENSURE_NOT_BIG();
 
 
         while ((ret = read(fd, buf_body + buf_body_read_len, buf_body_len - buf_body_read_len)) ==
@@ -377,7 +378,10 @@ Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, j
             content_length = 0;
     char buf_body[buf_body_len];
     memset(buf_body, 0, buf_body_len);
+
+    LOGE("%s", "read");
     do {
+        ENSURE_NOT_BIG();
 
 
         while ((ret = read(fd, buf_body + buf_body_read_len, buf_body_len - buf_body_read_len)) ==
@@ -410,7 +414,13 @@ Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, j
         if (chunked && indexof(buf_body, "0\r\n\r\n") != -1) {
             break;
         }
-        if (content_length && strlen(strstr(buf_body, "\r\n\r\n")) + 4 >= content_length)break;
+//        if (content_length > 0) {
+//            LOGE("strlen(strstr(buf_body = \n"
+//                 "  \"\\r\\n\\r\\n\")) + 4 = %d\n"
+//                 "  content_length = %d\n"
+//                 " ", strlen(strstr(buf_body, "\r\n\r\n")) - 4, content_length);
+//        }
+        if (content_length > 0 && strlen(strstr(buf_body, "\r\n\r\n")) - 4 >= content_length)break;
 //        LOGE("%d %d", ret, buf_body_read_len);
 //
         //if (indexof(buf_body, "0\r\n\r\n") != -1) { break; }
@@ -463,6 +473,7 @@ Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, j
         strcat(buf_body, "\n");
     }
 
+//    LOGE("%s", buf_body);
     close(fd);
     (*env)->ReleaseStringUTFChars(env, word_, word);
     cJSON_Delete(json);
@@ -529,7 +540,7 @@ Java_euphoria_psycho_todo_NativeUtils_youdaoDictionary(JNIEnv *env, jclass type,
         path_str++;
     }
     buf_encode[buf_encode_index] = 0;;
-    size_t buf_path_len = strlen("1f5687b5a6b94361") + (strlen(word) << 1) +
+    size_t buf_path_len = strlen("1f5687b5a6b94361") + (strlen(word) << 2) +
                           strlen("2433z6GPFslGhUuQltdWP7CPlbk8NZC0") + 60;;
     char buf_path[buf_path_len];
     memset(buf_path, 0, buf_path_len);
@@ -569,8 +580,11 @@ Java_euphoria_psycho_todo_NativeUtils_youdaoDictionary(JNIEnv *env, jclass type,
     char buf_body[buf_body_len];
     memset(buf_body, 0, buf_body_len);
     do {
+
+        ENSURE_NOT_BIG();
         while ((ret = read(fd, buf_body + buf_body_read_len, buf_body_len - buf_body_read_len)) ==
                -1 && errno == EINTR);
+        //LOGE("%s %s", buf_path, buf_body);
         if (ret <= 0) {
             close(fd);
             (*env)->ReleaseStringUTFChars(env, word_, word);
