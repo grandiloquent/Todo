@@ -210,125 +210,40 @@ public class EditUtils {
 
 
     static void formatList(EditActivity activity) {
-
-        EditText editText = activity.getEditText();
-
-        int saved = editText.getSelectionStart();
-
-        int curLine = getCurrentCursorLine(editText);
-        if (curLine == -1) return;
-
-        String[] lines = editText.getText().toString().split("\n");
-
-        int start = curLine;
-
-        int startLine = 0;
-        int end = curLine;
-        int endLine = lines.length - 1;
-        while (--start > -1) {
-            if (Strings.isNullOrWhiteSpace(lines[start])) {
-                startLine = start;
-                break;
-            }
-        }
-        if (startLine != 0) {
-            startLine++;
-        }
-
-        while (end++ < lines.length - 1) {
-            if (Strings.isNullOrWhiteSpace(lines[end])) {
-                endLine = end;
-                break;
-            }
-        }
-        if (endLine != lines.length - 1) {
-            endLine--;
-        }
-
-        String[] sortLines = Arrays.copyOfRange(lines, startLine, endLine + 1);
+        selectWholeLines(activity.getEditText());
+        CharSequence charSequence = EditTexts.getSelectionText(activity.getEditText());
+        if (Strings.isNullOrWhiteSpace(charSequence)) return;
+        String[] sortLines = charSequence.toString().split("\n");
 
         for (int i = 0; i < sortLines.length; i++) {
-            if (sortLines[i].startsWith("* ")) {
-                sortLines[i] = sortLines[i].substring(2);
-            } else {
-
-                sortLines[i] = "* " + sortLines[i];
-
-            }
+            if (sortLines[i].startsWith("* ")) sortLines[i] = sortLines[i].substring(2);
+            else sortLines[i] = "* " + sortLines[i];
         }
-        for (int i = startLine, j = 0; i <= endLine; i++, j++) {
-            lines[i] = sortLines[j];
-        }
-        editText.setText(Strings.join("\n", lines));
+        activity.getEditText().getText().replace(
+                activity.getEditText().getSelectionStart(),
+                activity.getEditText().getSelectionEnd(),
+                Strings.join("\n", sortLines)
+        );
+        activity.getEditText().setSelection(activity.getEditText().getSelectionStart());
 
-        if (saved > editText.getText().length())
-            saved = editText.getText().length();
-        editText.setSelection(saved);
-        //        int[] position = extendSelect(activity.getEditText());
-//        activity.getEditText().setSelection(position[0], position[1]);
-//        String value = activity.getEditText().getText().toString().substring(position[0], position[1]).trim();
-//
-//        if (Strings.isNullOrWhiteSpace(value)) return;
-//        else {
-//
-//            Contexts.setText(activity.getClipboardManager(), value);
-//        }
-//        String[] lines = value.split("\n");
-//        Collator collator = Collator.getInstance(Locale.CHINA);
-//        Arrays.sort(lines, (o1, o2) -> collator.compare(o1.trim(), o2.trim()));
-//        StringBuilder sb = new StringBuilder();
-//        for (String l : lines) {
-//            sb.append(l).append('\n');
-//        }
-//        activity.getEditText().getText().replace(activity.getEditText().getSelectionStart(), activity.getEditText().getSelectionEnd(), sb.toString());
 
     }
 
     static void formatOrder(EditActivity activity) {
 
-        EditText editText = activity.getEditText();
-
-        int saved = editText.getSelectionStart();
-
-        int curLine = getCurrentCursorLine(editText);
-        if (curLine == -1) return;
-
-        String[] lines = editText.getText().toString().split("\n");
-
-        int start = curLine;
-        int startLine = 0;
-        int end = curLine;
-        int endLine = lines.length - 1;
-        while (--start > -1) {
-            if (Strings.isNullOrWhiteSpace(lines[start])) {
-                startLine = start;
-                break;
-            }
-        }
-        if (startLine != 0) {
-            startLine++;
-        }
-
-        while (end++ < lines.length - 1) {
-            if (Strings.isNullOrWhiteSpace(lines[end])) {
-                endLine = end;
-                break;
-            }
-        }
-        if (endLine != lines.length - 1) {
-            endLine--;
-        }
-
-        String[] sortLines = Arrays.copyOfRange(lines, startLine, endLine + 1);
+        selectWholeLine(activity.getEditText());
+        CharSequence charSequence = EditTexts.getSelectionText(activity.getEditText());
+        if (Strings.isNullOrWhiteSpace(charSequence)) return;
+        activity.getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, charSequence));
+        String[] sortLines = charSequence.toString().split("\n");
         Collator collator = Collator.getInstance(Locale.CHINA);
         Arrays.sort(sortLines, (o1, o2) -> collator.compare(o1.trim(), o2.trim()));
-        for (int i = startLine, j = 0; i <= endLine; i++, j++) {
-            lines[i] = sortLines[j];
-        }
-        editText.setText(Strings.join("\n", lines));
-        if (saved > editText.getText().length())
-            saved = editText.getText().length();
-        editText.setSelection(saved);
+        activity.getEditText().getText().replace(
+                activity.getEditText().getSelectionStart(),
+                activity.getEditText().getSelectionEnd(),
+                Strings.join("\n", sortLines)
+        );
+
         //        int[] position = extendSelect(activity.getEditText());
 //        activity.getEditText().setSelection(position[0], position[1]);
 //        String value = activity.getEditText().getText().toString().substring(position[0], position[1]).trim();
@@ -350,49 +265,18 @@ public class EditUtils {
     }
 
     static void formatReorder(EditActivity activity) {
-        EditText editText = activity.getEditText();
-
-        int saved = editText.getSelectionStart();
-
-        int curLine = getCurrentCursorLine(editText);
-        if (curLine == -1) return;
-
-        String[] lines = editText.getText().toString().split("\n");
-
-        int start = curLine;
-        int startLine = 0;
-        int end = curLine;
-        int endLine = lines.length - 1;
-        while (--start > -1) {
-            if (Strings.isNullOrWhiteSpace(lines[start])) {
-                startLine = start;
-                break;
-            }
-        }
-        if (startLine != 0) {
-            startLine++;
-        }
-
-        while (end++ < lines.length - 1) {
-            if (Strings.isNullOrWhiteSpace(lines[end])) {
-                endLine = end;
-                break;
-            }
-        }
-        if (endLine != lines.length - 1) {
-            endLine--;
-        }
-
-        String[] sortLines = Arrays.copyOfRange(lines, startLine, endLine + 1);
+        selectWholeLine(activity.getEditText());
+        CharSequence charSequence = EditTexts.getSelectionText(activity.getEditText());
+        if (Strings.isNullOrWhiteSpace(charSequence)) return;
+        activity.getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, charSequence));
+        String[] sortLines = charSequence.toString().split("\n");
         Collator collator = Collator.getInstance(Locale.CHINA);
         Arrays.sort(sortLines, (o1, o2) -> collator.compare(Strings.substringAfterLast(o1.trim(), '/'), Strings.substringAfterLast(o2.trim(), '/')));
-        for (int i = startLine, j = 0; i <= endLine; i++, j++) {
-            lines[i] = sortLines[j];
-        }
-        editText.setText(Strings.join("\n", lines));
-        if (saved > editText.getText().length())
-            saved = editText.getText().length();
-        editText.setSelection(saved);
+        activity.getEditText().getText().replace(
+                activity.getEditText().getSelectionStart(),
+                activity.getEditText().getSelectionEnd(),
+                Strings.join("\n", sortLines)
+        );
 
 
     }

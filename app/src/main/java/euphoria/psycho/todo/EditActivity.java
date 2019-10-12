@@ -159,7 +159,7 @@ public class EditActivity extends Activities {
         findViewById(R.id.format_cut).setOnClickListener(v -> formatCut());
 
 
-        mEditText.setText(Contexts.getText());
+        //mEditText.setText(Contexts.getText());
     }
 
     private void formatCut() {
