@@ -56,8 +56,9 @@ Java_euphoria_psycho_todo_NativeUtils_renderMarkdown(JNIEnv *env, jclass type, j
     struct sd_callbacks callbacks;
     struct html_renderopt options;
     sdhtml_renderer(&callbacks, &options, HTML_RENDER_FLAGS);
-    struct sd_markdown *markdown = sd_markdown_new(MKDEXT_TABLES | MKDEXT_AUTOLINK, 16, &callbacks,
-                                                   &options);
+    struct sd_markdown *markdown = sd_markdown_new(
+            MKDEXT_TABLES | MKDEXT_AUTOLINK | MKDEXT_FENCED_CODE, 16, &callbacks,
+            &options);
     struct buf *output_buf;
     output_buf = bufnew(128);
     //result = kno_make_string(NULL,output_buf->size,output_buf->data);

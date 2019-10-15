@@ -24,6 +24,8 @@ import java.text.Collator;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import euphoria.psycho.common.Contexts;
 import euphoria.psycho.common.EditTexts;
@@ -192,20 +194,28 @@ public class EditUtils {
     }
 
     static void formatIndentIncrease(EditActivity activity) {
+        EditText editText = activity.getEditText();
 
+        selectWholeLines(editText);
 
-        int[] position = extendSelect(activity.getEditText());
-        activity.getEditText().setSelection(position[0], position[1]);
-        String value = activity.getEditText().getText().toString().substring(position[0], position[1]);
+        String value = EditTexts.getSelectionText(editText).toString();
         String[] lines = value.split("\n");
         StringBuilder sb = new StringBuilder();
+        Pattern p = Pattern.compile("^ +");
         for (String l : lines) {
-
-
-            sb.append("    ").append(l).append('\n');
+            Matcher m = p.matcher(l);
+            if (m.find()) {
+                int len = m.group().length();
+                if (len >= 4) {
+                    sb.append(l.trim());
+                } else
+                    sb.append("  ").append(l);
+            } else {
+                sb.append("  ").append(l);
+            }
         }
-        activity.getEditText().getText().replace(activity.getEditText().getSelectionStart(), activity.getEditText().getSelectionEnd(), sb.toString());
-
+        editText.getText().replace(editText.getSelectionStart(),
+                editText.getSelectionEnd(), sb.toString());
     }
 
 

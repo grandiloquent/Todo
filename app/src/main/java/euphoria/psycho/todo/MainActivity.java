@@ -292,7 +292,7 @@ public class MainActivity extends Activities implements OnItemClickListener {
         super.onPause();
         if (mFilterString == null || mFilterString.length() == 0) {
             PreferenceManager.getDefaultSharedPreferences(this).edit().remove(KEY_FILER_STRING).apply();
-
+            ;
         } else
             PreferenceManager.getDefaultSharedPreferences(this).edit().putString(KEY_FILER_STRING,
                     mFilterString).apply();
