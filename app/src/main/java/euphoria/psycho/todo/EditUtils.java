@@ -231,7 +231,7 @@ public class EditUtils {
 
     static void formatOrder(EditActivity activity) {
 
-        selectWholeLine(activity.getEditText());
+        selectWholeLines(activity.getEditText());
         CharSequence charSequence = EditTexts.getSelectionText(activity.getEditText());
         if (Strings.isNullOrWhiteSpace(charSequence)) return;
         activity.getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, charSequence));
@@ -265,7 +265,7 @@ public class EditUtils {
     }
 
     static void formatReorder(EditActivity activity) {
-        selectWholeLine(activity.getEditText());
+        selectWholeLines(activity.getEditText());
         CharSequence charSequence = EditTexts.getSelectionText(activity.getEditText());
         if (Strings.isNullOrWhiteSpace(charSequence)) return;
         activity.getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, charSequence));

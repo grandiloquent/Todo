@@ -45,10 +45,17 @@ public class Database extends SQLiteOpenHelper {
     public void close() {
     }
 
-    public List<Pair<Integer, String>> fetchTitles() {
+    public List<Pair<Integer, String>> fetchTitles(String filter) {
         Cursor cursor = getReadableDatabase().rawQuery("select ID,Title from Article order by UpdateAt desc", null);
         List<Pair<Integer, String>> strings = new ArrayList<>();
         while (cursor.moveToNext()) {
+            if (filter != null && filter.length() != 0) {
+                String title = cursor.getString(1);
+                if (title.contains(filter))
+                    strings.add(Pair.create(cursor.getInt(0),
+                            title));
+
+            }
             strings.add(Pair.create(cursor.getInt(0), cursor.getString(1)));
         }
         cursor.close();

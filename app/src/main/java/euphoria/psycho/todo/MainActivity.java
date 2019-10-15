@@ -4,6 +4,9 @@ import android.Manifest.permission;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Environment;
+import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,6 +16,7 @@ import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -42,6 +46,9 @@ public class MainActivity extends Activities implements OnItemClickListener {
     private int mPadding;
     private ListView mListView;
     private Database mDatabase;
+    private EditText mEditText;
+    private String mFilterString;
+    private static final String KEY_FILER_STRING = "filter";
 
     private void checkDatabase() {
         if (mDatabase == null) {
@@ -123,7 +130,7 @@ public class MainActivity extends Activities implements OnItemClickListener {
     private void refreshListView() {
         checkDatabase();
         mItems.clear();
-        mItems.addAll(mDatabase.fetchTitles());
+        mItems.addAll(mDatabase.fetchTitles(mFilterString));
         Logs.d(mItems.size());
 
         mAdapter.notifyDataSetChanged();
@@ -131,10 +138,31 @@ public class MainActivity extends Activities implements OnItemClickListener {
 
     @Override
     protected void initialize() {
+        mFilterString = PreferenceManager.getDefaultSharedPreferences(this).getString(KEY_FILER_STRING, null);
+        setContentView(R.layout.activity_main);
         mBackgroundId = Views.getSelectableItemBackground(this);
         mPadding = Views.dp2px(8);
 
-        ListView listView = new ListView(this);
+        mEditText = findViewById(R.id.filter);
+        mEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                mFilterString = s.toString();
+                refreshListView();
+
+            }
+        });
+        ListView listView = findViewById(R.id.list_view);
         listView.setOnItemClickListener(this);
 
 
@@ -190,7 +218,6 @@ public class MainActivity extends Activities implements OnItemClickListener {
             }
         };
         listView.setAdapter(mAdapter);
-        setContentView(listView);
         mListView = listView;
         refreshListView();
     }
@@ -260,6 +287,16 @@ public class MainActivity extends Activities implements OnItemClickListener {
         startActivity(settings);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mFilterString == null || mFilterString.length() == 0) {
+            PreferenceManager.getDefaultSharedPreferences(this).edit().remove(KEY_FILER_STRING).apply();
+
+        } else
+            PreferenceManager.getDefaultSharedPreferences(this).edit().putString(KEY_FILER_STRING,
+                    mFilterString).apply();
+    }
 
     @Override
     protected int requestCodePermissions() {
