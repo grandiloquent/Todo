@@ -6,8 +6,11 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
@@ -65,6 +68,22 @@ public class Browsers extends Activity {
         LinearLayout.LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         linearLayout.addView(editText, layoutParams);
         editText.setMaxLines(1);
+        editText.setOnKeyListener(new OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+
+                    switch (mMode) {
+                        case 0:
+                            mWebView.loadUrl(String.format("https://so.m.jd.com/ware/search.action?keyword=%s&filt_type=col_type,L0M0;redisstore,1;&area_ids=1,72,2819&sort_type=sort_dredisprice_asc&sf=11&as=1&qp_disable=no", mEditText.getText().toString()));
+                            return true;
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+        ;
 
         mEditText = editText;
         mWebView = setupWebView(linearLayout);
@@ -141,7 +160,7 @@ public class Browsers extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initialize();
-        mWebView.loadUrl("https://so.m.jd.com/ware/search.action?keyword=夹子&searchFrom=search&sf=11&as=1&sort_type=sort_dredisprice_asc&as=1");
+
     }
 
     @Override

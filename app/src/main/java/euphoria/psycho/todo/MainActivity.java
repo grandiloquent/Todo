@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import euphoria.psycho.Browsers;
 import euphoria.psycho.common.Activities;
 import euphoria.psycho.common.Contexts;
 import euphoria.psycho.common.Interfaces.Listener;
@@ -38,6 +39,7 @@ public class MainActivity extends Activities implements OnItemClickListener {
     private static final int MENU_EDIT = 5;
     private static final int MENU_UPLOAD = 1;
     private static final int MENU_SETTINGS = 6;
+    private static final int MENU_BROWSER = 8;
 
     private static final int REQUEST_CODE_EDIT = 679;
     private int mBackgroundId;
@@ -246,6 +248,7 @@ public class MainActivity extends Activities implements OnItemClickListener {
         menu.add(0, MENU_UPLOAD, 0, "上传");
         menu.add(0, MENU_DOWNLOAD, 0, "下载");
         menu.add(0, MENU_SETTINGS, 0, "设置");
+        menu.add(0, MENU_BROWSER, 0, "浏览器");
 
         MenuItem addMenuItem = menu.add(0, MENU_ADD, 0, "添加");
         addMenuItem.setIcon(R.drawable.ic_action_add);
@@ -276,6 +279,10 @@ public class MainActivity extends Activities implements OnItemClickListener {
                 return true;
             case MENU_SETTINGS:
                 menuSettings();
+                return true;
+            case MENU_BROWSER:
+                Intent browser = new Intent(this, Browsers.class);
+                startActivity(browser);
                 return true;
         }
         return super.onOptionsItemSelected(item);
