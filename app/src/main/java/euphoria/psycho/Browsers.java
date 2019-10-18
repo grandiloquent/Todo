@@ -75,7 +75,7 @@ public class Browsers extends Activity {
 
                     switch (mMode) {
                         case 0:
-                            mWebView.loadUrl(String.format("https://so.m.jd.com/ware/search.action?keyword=%s&filt_type=col_type,L0M0;redisstore,1;&area_ids=1,72,2819&sort_type=sort_dredisprice_asc&sf=11&as=1&qp_disable=no", mEditText.getText().toString()));
+                            mWebView.loadUrl(String.format("https://so.m.jd.com/ware/search.action?keyword=%s&filt_type=col_type,L0M0;redisstore,1;&sort_type=sort_dredisprice_asc&sf=11&as=1&qp_disable=no", mEditText.getText().toString()));
                             return true;
                     }
                     return true;
