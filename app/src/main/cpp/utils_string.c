@@ -34,38 +34,29 @@ bool iswhitespace(const char *s) {
 }
 
 char *remove_redundancy(const char *s) {
-    const char *text = s;
-    const char *p = s;
-    char *ret = malloc(strlen(s));
-    memset(ret, 0, strlen(s));
-    while (*text) {
-        if (*text == '\n') {
-            size_t len = text - p;
+    size_t len = strlen(s);
+    char *r = malloc(len + 1);
+    memset(r, 0, len + 1);
+    char *t = r;
 
-            char tmp[len + 1];
-            memset(tmp, 0, len + 1);
-            strncpy(tmp, p, len);
-            if (iswhitespace(tmp)) {
+    while (*s) {
+        if (*s == '\n') {
+            *t++ = '\n';
+            char ch = 0;
+            while (*++s && isspace(*s)) {
 
-                while (isspace(*++text))
-                    p = text;
-                continue;
-            } else {
-                strcat(ret, tmp);
-                strcat(ret, "\n");
+                if (ch == 0 && *s == '\n') {
+
+                    ch = '\n';
+                }
             }
 
-            p = text + 1;
+            if (ch != 0)
+                *t++ = '\n';
+            continue;
         }
-        text++;
+
+        *t++ = *s++;
     }
-    if (text > p) {
-        char tmp[text - p + 1];
-        strncpy(tmp, p, text - p);
-        if (!iswhitespace(tmp)) {
-            strcat(ret, tmp);
-        }
-        // printf("%s, %d %d\n", tmp, text, p);
-    }
-    return ret;
+    return r;
 }

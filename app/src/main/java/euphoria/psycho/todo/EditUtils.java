@@ -292,13 +292,14 @@ public class EditUtils {
     }
 
     static void formatTable(EditActivity activity) {
-        int[] position = extendSelect(activity.getEditText());
-        activity.getEditText().setSelection(position[0], position[1]);
-        String value = activity.getEditText().getText().toString().substring(position[0], position[1]).trim();
+        selectWholeLines(activity.getEditText());
+        CharSequence charSequence = EditTexts.getSelectionText(activity.getEditText());
+        if (Strings.isNullOrWhiteSpace(charSequence)) return;
+        activity.getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, charSequence));
 
         activity.getEditText().getText().replace(activity.getEditText().getSelectionStart(), activity.getEditText().getSelectionEnd(),
 
-                Markdowns.convertToTable(value));
+                Markdowns.convertToTable(charSequence.toString()));
 
     }
 

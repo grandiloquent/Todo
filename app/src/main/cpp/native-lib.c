@@ -324,9 +324,12 @@ Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, j
     //int ret = baidu_query_dictionary(word, &s, englishToChinese ? "zh" : "en");
 
     SOCKET_INIT("api.fanyi.baidu.com", "80");
-    URL_ENCODE(word);
 
-    MAKE_SALT();
+
+    int salt = time(NULL);
+    char salt_buf[11];
+    snprintf(salt_buf, 11, "%d", salt);
+
 
     size_t md5_len = strlen(BAI_APP_ID) + strlen(word) + strlen(BAIDU_SECRET) + 12;
     char md5_buf[md5_len];
@@ -337,6 +340,8 @@ Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, j
     strcat(md5_buf, salt_buf);
     strcat(md5_buf, BAIDU_SECRET);
     md5_buf[md5_len] = 0;
+
+
     char md5[33];
     MD5_CTX md5_ctx;
     MD5Init(&md5_ctx);
@@ -352,13 +357,41 @@ Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, j
              md5_ctx.digest[12], md5_ctx.digest[13], md5_ctx.digest[14], md5_ctx.digest[15]);
 
     const char *url_format = "/api/trans/vip/translate?q=%s&from=auto&to=%s&appid=%s&salt=%s&sign=%s";
+
+    char buf_encode[strlen(word) * 3 + 1];
+    {
+        const char *path_str = word;
+        size_t buf_encode_index = 0;
+        while (*path_str) {
+            if (isalnum(*path_str) || *path_str == '-' || *path_str == '_' || *path_str == '.' ||
+                *path_str == '~') {
+                buf_encode[buf_encode_index] = *path_str;
+                buf_encode_index = buf_encode_index + 1;
+            } else if (*path_str == ' ') {
+                buf_encode[buf_encode_index] = '+';
+                buf_encode_index = buf_encode_index + 1;
+            } else {
+                buf_encode[buf_encode_index] = '%';
+                buf_encode_index = buf_encode_index + 1;
+                buf_encode[buf_encode_index] = HEX_ARRAY[*path_str >> 4 & 15];
+                buf_encode_index = buf_encode_index + 1;
+                buf_encode[buf_encode_index] = HEX_ARRAY[*path_str & 15 & 15];
+                buf_encode_index = buf_encode_index + 1;
+            }
+            path_str++;
+        }
+        buf_encode[buf_encode_index] = 0;
+    }
+
     size_t buf_path_len =
             strlen(url_format) + strlen(buf_encode) +
             strlen(to) + strlen(BAI_APP_ID) + strlen(salt_buf) +
             strlen(md5) + 10;
 
+
     char buf_path[buf_path_len];
     memset(buf_path, 0, buf_path_len);
+
     snprintf(buf_path, buf_path_len, url_format, buf_encode, to, BAI_APP_ID, salt_buf, md5);
 
     size_t header_buf_len = buf_path_len + 128;
@@ -380,19 +413,20 @@ Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, j
     char buf_body[buf_body_len];
     memset(buf_body, 0, buf_body_len);
 
-    LOGE("%s", "read");
-    do {
-        ENSURE_NOT_BIG();
 
+    do {
+
+
+        ENSURE_NOT_BIG();
 
         while ((ret = read(fd, buf_body + buf_body_read_len, buf_body_len - buf_body_read_len)) ==
                -1 && errno == EINTR);
-
+        //LOGE("%s", buf_body);
         if (!chunked && indexof(buf_body, "Transfer-Encoding: chunked") != -1)chunked = 1;
         if (!content_length &&
             indexof(buf_body, "Content-Length: ") != -1) {
             char tmp[10];
-
+            memset(tmp, 0, 10);
             for (int i = indexof(buf_body, "Content-Length: ") + strlen("Content-Length: ")
                  , j = i + 10, c = 0;
                  i < j; ++i) {
@@ -403,8 +437,11 @@ Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, j
                 tmp[c++] = buf_body[i];
             }
 
+
             content_length = strtol(tmp, NULL, 10);
+
         }
+
         if (ret <= 0) {
             close(fd);
             (*env)->ReleaseStringUTFChars(env, word_, word);
@@ -420,6 +457,11 @@ Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, j
 //                 "  \"\\r\\n\\r\\n\")) + 4 = %d\n"
 //                 "  content_length = %d\n"
 //                 " ", strlen(strstr(buf_body, "\r\n\r\n")) - 4, content_length);
+//        }
+//        if (content_length > 0) {
+//            LOGE("content_length = %d %d", content_length,
+//                 strlen(strstr(buf_body, "\r\n\r\n")) - 4);
+//
 //        }
         if (content_length > 0 && strlen(strstr(buf_body, "\r\n\r\n")) - 4 >= content_length)break;
 //        LOGE("%d %d", ret, buf_body_read_len);
@@ -474,6 +516,7 @@ Java_euphoria_psycho_todo_NativeUtils_baiduTranslate(JNIEnv *env, jclass type, j
         strcat(buf_body, "\n");
     }
 
+    //LOGE("%s", buf_body);
 //    LOGE("%s", buf_body);
     close(fd);
     (*env)->ReleaseStringUTFChars(env, word_, word);
