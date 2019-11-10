@@ -146,6 +146,7 @@ public class MainActivity extends Activities implements OnItemClickListener {
         mPadding = Views.dp2px(8);
 
         mEditText = findViewById(R.id.filter);
+        mEditText.setText(mFilterString);
         mEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -164,6 +165,7 @@ public class MainActivity extends Activities implements OnItemClickListener {
 
             }
         });
+
         ListView listView = findViewById(R.id.list_view);
         listView.setOnItemClickListener(this);
 

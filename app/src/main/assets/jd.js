@@ -1,7 +1,7 @@
 (function() {
     var Jd = function Jd() {};
     Jd.prototype.initialize = function() {
-        this.hideItems();
+        //this.hideItems();
         var that = this;
         window.addEventListener('scroll', function(event) {
             that.hideItems();

@@ -34,7 +34,7 @@ public class Database extends SQLiteOpenHelper {
         values.put("CreateAt", System.currentTimeMillis());
         values.put("UpdateAt", System.currentTimeMillis());
 
-        getWritableDatabase().insert("Article", null, values);
+        note.Id = (int) getWritableDatabase().insert("Article", null, values);
     }
 
     public void delete(int id) {
@@ -55,8 +55,8 @@ public class Database extends SQLiteOpenHelper {
                     strings.add(Pair.create(cursor.getInt(0),
                             title));
 
-            }
-            strings.add(Pair.create(cursor.getInt(0), cursor.getString(1)));
+            } else
+                strings.add(Pair.create(cursor.getInt(0), cursor.getString(1)));
         }
         cursor.close();
         return strings;

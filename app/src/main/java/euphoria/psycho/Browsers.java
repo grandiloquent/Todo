@@ -141,7 +141,7 @@ public class Browsers extends Activity {
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
 
 
-                Log.e(TAG, "Debug: onConsoleMessage, " + consoleMessage.message());
+               // Log.e(TAG, "Debug: onConsoleMessage, " + consoleMessage.message());
 
                 return super.onConsoleMessage(consoleMessage);
             }

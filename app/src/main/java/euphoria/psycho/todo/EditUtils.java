@@ -402,45 +402,77 @@ public class EditUtils {
         CharSequence text = editText.getText();
         int len = editText.getText().length();
 
-        while (start - 1 > -1 && text.charAt(start - 1) != '\n') {
+        boolean found = false;
+        while (start - 1 > -1) {
+            char c = text.charAt(start - 1);
             start--;
+            if (c == '\n') {
+                while (start - 1 > -1 && Character.isWhitespace(text.charAt(start - 1))) {
+                    if (text.charAt(start - 1) == '\n') {
+                        found = true;
+                        break;
+                    }
+                    start--;
+                }
+                if (found) break;
+            }
         }
-        int startTmp;
-
-        do {
-            startTmp = start - 1;
-
-            while (startTmp - 1 > -1 && text.charAt(startTmp - 1) != '\n') {
-                startTmp--;
+        found = false;
+        while (end + 1 < len) {
+            char c = text.charAt(end + 1);
+            end++;
+            if (c == '\n') {
+                while (end + 1 < len && Character.isWhitespace(text.charAt(end + 1))) {
+                    if (text.charAt(end + 1) == '\n') {
+                        found = true;
+                        break;
+                    }
+                    end++;
+                }
+                if (found) break;
             }
-            if (startTmp < 0 || startTmp == start) break;
-            if (text.subSequence(startTmp, start).toString().trim().length() == 0) {
-                break;
-            }
-            start = startTmp;
-        } while (startTmp > -1);
-
-
-        while (end + 1 < len && text.charAt(++end) != '\n') ;
-
-        int endTmp;
-
-        do {
-            endTmp = end;
-
-            while (endTmp + 1 < len && text.charAt(endTmp + 1) != '\n') {
-                endTmp++;
-            }
-            if (endTmp >= len || endTmp == end) break;
-            if (text.subSequence(end, endTmp).toString().trim().length() == 0) {
-                break;
-            }
-            end = endTmp;
-        } while (endTmp < len);
-
-
-        if (end + 1 == len) end++;
+        }
         editText.setSelection(start, end);
+
+//        while (start - 1 > -1 && text.charAt(start - 1) != '\n') {
+//            start--;
+//        }
+//        int startTmp;
+//
+//        do {
+//            startTmp = start - 1;
+//
+//            while (startTmp - 1 > -1 && text.charAt(startTmp - 1) != '\n') {
+//                startTmp--;
+//            }
+//            if (startTmp < 0 || startTmp == start) break;
+//            if (text.subSequence(startTmp, start).toString().trim().length() == 0) {
+//                break;
+//            }
+//            start = startTmp;
+//        } while (startTmp > -1);
+//
+//
+//        while (end + 1 < len && text.charAt(++end) != '\n') ;
+//
+//        int endTmp;
+//
+//        do {
+//            endTmp = end;
+//
+//            while (endTmp + 1 < len && text.charAt(endTmp + 1) != '\n') {
+//                endTmp++;
+//            }
+//            if (endTmp >= len || endTmp == end) break;
+//            if (text.subSequence(end, endTmp).toString().trim().length() == 0) {
+//                break;
+//            }
+//            end = endTmp;
+//        } while (endTmp < len);
+//
+//
+//        if (end + 1 == len) end++;
+//        editText.setSelection(start, end);
 
 
 
