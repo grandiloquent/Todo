@@ -21,6 +21,7 @@ import euphoria.psycho.common.Strings;
 import euphoria.psycho.common.Threads;
 
 public class EditActivity extends Activities {
+    private static final Object sLock = new Object();
     private Database mDatabase;
     private boolean mFinished = false;
     private EditText mEditText;
@@ -37,7 +38,128 @@ public class EditActivity extends Activities {
         }
     }
 
+    private void formatBold() {
+        EditUtils.wrapSelection(mEditText, "**");
+    }
+
+    private void formatChineseToEnglish() {
+        if (EditTexts.isWhitespace(mEditText)) return;
+        String line = EditTexts.selectLine(mEditText).trim();
+
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.youdaoDictionary(line, true, false);
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + (result == null ? "youdaoDictionary" : result));
+                });
+            }
+        }).start();
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.baiduTranslate(line, false);
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + (result == null ? "baiduTranslate" : result));
+                });
+            }
+        }).start();
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.googleTranslate(line, false);
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + (result == null ? "googleTranslate" : result));
+                });
+            }
+        }).start();
+    }
+
+    private void formatCode() {
+        String s = EditTexts.getSelectionText(mEditText).toString().trim();
+        if (s.length() == 0
+                || s.contains("\n")) {
+            EditUtils.wrapSelection(mEditText, "\n```\n");
+
+        } else {
+            EditUtils.wrapSelection(mEditText, "`");
+
+        }
+    }
+
+    private void formatCut() {
+
+        CharSequence result = EditTexts.deleteLineWithWhitespace(mEditText);
+        if (Strings.isNullOrWhiteSpace(result)) return;
+        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, result));
+    }
+
+    private void formatEnglishToChinese() {
+        if (EditTexts.isWhitespace(mEditText)) return;
+        String line = EditTexts.selectLine(mEditText).trim();
+
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.youdaoDictionary(line, true, true);
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + (result == null ? "youdaoDictionary" : result));
+                });
+            }
+        }).start();
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.baiduTranslate(line, true);
+
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + (result == null ? "baiduTranslate" : result));
+                });
+            }
+        }).start();
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            String result = NativeUtils.googleTranslate(line, true);
+            synchronized (sLock) {
+                Threads.postOnUiThread(() -> {
+                    mEditText.getText().insert(
+                            mEditText.getSelectionEnd(),
+                            "\n" + (result == null ? "googleTranslate" : result));
+                });
+            }
+        }).start();
+    }
+
+    private void formatFunctions() {
+        if (EditTexts.isWhitespace(mEditText)) return;
+
+        String text = EditTexts.selectLine(mEditText);
+
+        double ret = NativeUtils.calculateExpr(text);
+
+        mEditText.getText().insert(mEditText.getSelectionEnd(), String.format(" = %f", ret));
+
+    }
+
+    private void formatHr() {
+        mEditText.getText().insert(
+                mEditText.getSelectionStart(),
+                "\n\n\n---\n\n\n"
+        );
+    }
+
     private void formatHtm() {
+        mEditText.setText(EditTexts.removeRedundancyLines(mEditText.getText().toString()));
         try {
             EditUtils.formatHtm(this);
         } catch (IOException e) {
@@ -47,6 +169,19 @@ public class EditActivity extends Activities {
 
     private void formatIndentIncrease() {
         EditUtils.formatIndentIncrease(this);
+    }
+
+    private void formatItalic() {
+        EditUtils.wrapSelection(mEditText, "*");
+    }
+
+    private void formatLineSpacing() {
+
+
+        if (!EditTexts.isWhitespace(mEditText)) {
+            EditUtils.split(mEditText);
+            // mEditText.setText(NativeUtils.removeRedundancy(mEditText.getText().toString().trim().replaceAll("\r+", "")));
+        }
     }
 
     private void formatLink() {
@@ -140,6 +275,8 @@ public class EditActivity extends Activities {
         setContentView(R.layout.activity_edit);
         mEditText = findViewById(R.id.edit);
         loadNote();
+        findViewById(R.id.format_hr).setOnClickListener(v -> formatHr());
+
         findViewById(R.id.format_bold).setOnClickListener(v -> formatBold());
         findViewById(R.id.format_chinese_to_english).setOnClickListener(v -> formatChineseToEnglish());
         findViewById(R.id.format_code).setOnClickListener(v -> formatCode());
@@ -160,136 +297,6 @@ public class EditActivity extends Activities {
 
 
         //mEditText.setText(Contexts.getText());
-    }
-
-    private void formatCut() {
-
-        CharSequence result = EditTexts.deleteLineWithWhitespace(mEditText);
-        if (Strings.isNullOrWhiteSpace(result)) return;
-        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, result));
-    }
-
-    private void formatItalic() {
-        EditUtils.wrapSelection(mEditText, "*");
-    }
-
-    private void formatCode() {
-        String s = EditTexts.getSelectionText(mEditText).toString().trim();
-        if (s.length() == 0
-                || s.contains("\n")) {
-            EditUtils.wrapSelection(mEditText, "\n```\n");
-
-        } else {
-            EditUtils.wrapSelection(mEditText, "`");
-
-        }
-    }
-
-    private void formatBold() {
-        EditUtils.wrapSelection(mEditText, "**");
-    }
-
-    private void formatFunctions() {
-        if (EditTexts.isWhitespace(mEditText)) return;
-
-        String text = EditTexts.selectLine(mEditText);
-
-        double ret = NativeUtils.calculateExpr(text);
-
-        mEditText.getText().insert(mEditText.getSelectionEnd(), String.format(" = %f", ret));
-
-    }
-
-    private static final Object sLock = new Object();
-
-
-    private void formatEnglishToChinese() {
-        if (EditTexts.isWhitespace(mEditText)) return;
-        String line = EditTexts.selectLine(mEditText).trim();
-
-        new Thread(() -> {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            String result = NativeUtils.youdaoDictionary(line, true, true);
-            synchronized (sLock) {
-                Threads.postOnUiThread(() -> {
-                    mEditText.getText().insert(
-                            mEditText.getSelectionEnd(),
-                            "\n" + (result == null ? "youdaoDictionary" : result));
-                });
-            }
-        }).start();
-        new Thread(() -> {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            String result = NativeUtils.baiduTranslate(line, true);
-
-            synchronized (sLock) {
-                Threads.postOnUiThread(() -> {
-                    mEditText.getText().insert(
-                            mEditText.getSelectionEnd(),
-                            "\n" + (result == null ? "baiduTranslate" : result));
-                });
-            }
-        }).start();
-        new Thread(() -> {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            String result = NativeUtils.googleTranslate(line, true);
-            synchronized (sLock) {
-                Threads.postOnUiThread(() -> {
-                    mEditText.getText().insert(
-                            mEditText.getSelectionEnd(),
-                            "\n" + (result == null ? "googleTranslate" : result));
-                });
-            }
-        }).start();
-    }
-
-    private void formatChineseToEnglish() {
-        if (EditTexts.isWhitespace(mEditText)) return;
-        String line = EditTexts.selectLine(mEditText).trim();
-
-        new Thread(() -> {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            String result = NativeUtils.youdaoDictionary(line, true, false);
-            synchronized (sLock) {
-                Threads.postOnUiThread(() -> {
-                    mEditText.getText().insert(
-                            mEditText.getSelectionEnd(),
-                            "\n" + (result == null ? "youdaoDictionary" : result));
-                });
-            }
-        }).start();
-        new Thread(() -> {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            String result = NativeUtils.baiduTranslate(line, false);
-            synchronized (sLock) {
-                Threads.postOnUiThread(() -> {
-                    mEditText.getText().insert(
-                            mEditText.getSelectionEnd(),
-                            "\n" + (result == null ? "baiduTranslate" : result));
-                });
-            }
-        }).start();
-        new Thread(() -> {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            String result = NativeUtils.googleTranslate(line, false);
-            synchronized (sLock) {
-                Threads.postOnUiThread(() -> {
-                    mEditText.getText().insert(
-                            mEditText.getSelectionEnd(),
-                            "\n" + (result == null ? "googleTranslate" : result));
-                });
-            }
-        }).start();
-    }
-
-
-    private void formatLineSpacing() {
-
-
-        if (!EditTexts.isWhitespace(mEditText)) {
-            EditUtils.split(mEditText);
-            // mEditText.setText(NativeUtils.removeRedundancy(mEditText.getText().toString().trim().replaceAll("\r+", "")));
-        }
     }
 
     @Override

@@ -36,43 +36,6 @@ import euphoria.psycho.common.Strings;
 import static euphoria.psycho.common.EditTexts.detectStrings;
 
 public class EditUtils {
-    private static void cutLine(EditActivity activity) {
-        CharSequence value = EditTexts.cutStrings(activity.getEditText());//EditTexts.cutLine(activity.getEditText());
-        if (!Strings.isNullOrWhiteSpace(value)) {
-            activity.getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, value.toString().trim()));
-        }
-    }
-
-    public static CharSequence cutStrings(EditText editText) {
-        int[] range = detectStrings(editText);
-        if (range.length == 0) return null;
-        CharSequence result = editText.getText().subSequence(range[0], range[1]);
-        editText.getText().replace(range[0], range[1], Strings.join("\n\n", result.toString().split("[\r\n]+")));
-        return result;
-    }
-
-    public static void split(EditText editText) {
-        Editable text = editText.getText();
-        int len = text.length();
-        if (len == 0) return;
-        int start = editText.getSelectionStart();
-        int end = editText.getSelectionEnd();
-        if (start == len || text.charAt(start) == '\n') {
-            start--;
-        }
-        if (end < len && text.charAt(end) == '\n' && end - 1 > -1) {
-            end--;
-        }
-        while (start - 1 > -1 && text.charAt(start - 1) != '\n') start--;
-        while (start - 1 > -1 && Character.isWhitespace(text.charAt(start - 1))) start--;
-        while (end + 1 < len && text.charAt(end + 1) != '\n') end++;
-        while (end + 1 < len && Character.isWhitespace(text.charAt(end + 1))) end++;
-        if (end + 1 < len) end++;
-        CharSequence charSequence = editText.getText().subSequence(start, end);
-        editText.getText().replace(start, end, Strings.join(".\n\n", charSequence.toString().split("[\\.\r\n]+\\s*")));
-
-    }
-
     static void addLink(EditText editText, ClipboardManager clipboardManager) {
 
         CharSequence strings = Contexts.getClipboardString(clipboardManager);
@@ -86,23 +49,19 @@ public class EditUtils {
         }
     }
 
-    static void wrapSelection(EditText editText, String s) {
-
-
-        editText.getText().replace(editText.getSelectionStart(),
-                editText.getSelectionEnd(),
-                String.format("%s%s%s", s, EditTexts.getSelectionText(editText).toString().trim(), s));
+    private static void cutLine(EditActivity activity) {
+        CharSequence value = EditTexts.cutStrings(activity.getEditText());//EditTexts.cutLine(activity.getEditText());
+        if (!Strings.isNullOrWhiteSpace(value)) {
+            activity.getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, value.toString().trim()));
+        }
     }
 
-    public static int getCurrentCursorLine(EditText editText) {
-        int selectionStart = Selection.getSelectionStart(editText.getText());
-        Layout layout = editText.getLayout();
-
-        if (!(selectionStart == -1)) {
-            return layout.getLineForOffset(selectionStart);
-        }
-
-        return -1;
+    public static CharSequence cutStrings(EditText editText) {
+        int[] range = detectStrings(editText);
+        if (range.length == 0) return null;
+        CharSequence result = editText.getText().subSequence(range[0], range[1]);
+        editText.getText().replace(range[0], range[1], Strings.join("\n\n", result.toString().split("[\r\n]+")));
+        return result;
     }
 
     public static int[] extendSelect(EditText editText) {
@@ -218,7 +177,6 @@ public class EditUtils {
                 editText.getSelectionEnd(), sb.toString());
     }
 
-
     static void formatList(EditActivity activity) {
         selectWholeLines(activity.getEditText());
         CharSequence charSequence = EditTexts.getSelectionText(activity.getEditText());
@@ -226,8 +184,8 @@ public class EditUtils {
         String[] sortLines = charSequence.toString().split("\n");
 
         for (int i = 0; i < sortLines.length; i++) {
-            if (sortLines[i].startsWith("* ")) sortLines[i] = sortLines[i].substring(2);
-            else sortLines[i] = "* " + sortLines[i];
+            if (sortLines[i].startsWith("- ")) sortLines[i] = sortLines[i].substring(2);
+            else sortLines[i] = "- " + sortLines[i];
         }
         activity.getEditText().getText().replace(
                 activity.getEditText().getSelectionStart(),
@@ -330,6 +288,17 @@ public class EditUtils {
         }
     }
 
+    public static int getCurrentCursorLine(EditText editText) {
+        int selectionStart = Selection.getSelectionStart(editText.getText());
+        Layout layout = editText.getLayout();
+
+        if (!(selectionStart == -1)) {
+            return layout.getLineForOffset(selectionStart);
+        }
+
+        return -1;
+    }
+
     public static int getLineStart(EditText editText) {
 
         String text = editText.getText().toString();
@@ -365,6 +334,67 @@ public class EditUtils {
 
         }
         return start;
+    }
+
+    static void replace(EditActivity activity) {
+        View view = LayoutInflater.from(activity).inflate(R.layout.dialog_find, null);
+
+        EditText findEditText = view.findViewById(R.id.find);
+        EditText replaceEditText = view.findViewById(R.id.replace);
+
+        findEditText.setText(activity.getPreferences().getString("find_pattern", null));
+        replaceEditText.setText(activity.getPreferences().getString("replace_pattern", null));
+
+        new AlertDialog.Builder(activity)
+                .setView(view)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    String find = findEditText.getText().toString();
+                    String replace = replaceEditText.getText().toString();
+                    activity.getPreferences().edit()
+                            .putString("find_pattern", find)
+                            .putString("replace_pattern", replace)
+                            .apply();
+                    String value = activity.getEditText().getText().toString().replaceAll(
+                            find,
+                            replace
+                    );
+                    activity.getEditText().setText(value.replaceAll("\\\\n", "\n"));
+                    dialog.dismiss();
+
+                })
+                .setNeutralButton("保留匹配项", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String find = findEditText.getText().toString();
+                        activity.getPreferences().edit()
+                                .putString("find_pattern", find)
+                                .apply();
+                        String value = activity.getEditText().getText().toString();
+                        activity.getEditText().setText(Strings.join("", Strings.matchAll(value, find)));
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton("替换选择", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String find = findEditText.getText().toString();
+                        String replace = replaceEditText.getText().toString();
+                        activity.getPreferences().edit()
+                                .putString("find_pattern", find)
+                                .putString("replace_pattern", replace)
+                                .apply();
+                        String value = EditTexts.getSelectionText(activity.getEditText()).toString().replaceAll(
+                                find,
+                                replace
+                        );
+                        activity.getEditText().getText().replace(
+                                activity.getEditText().getSelectionStart(),
+                                activity.getEditText().getSelectionEnd(),
+                                value.replaceAll("\\\\n", "\n"));
+                        dialog.dismiss();
+
+                    }
+                }).show();
     }
 
     public static void selectWholeLine(EditText editText) {
@@ -484,64 +514,33 @@ public class EditUtils {
 
     }
 
-    static void replace(EditActivity activity) {
-        View view = LayoutInflater.from(activity).inflate(R.layout.dialog_find, null);
+    public static void split(EditText editText) {
+        Editable text = editText.getText();
+        int len = text.length();
+        if (len == 0) return;
+        int start = editText.getSelectionStart();
+        int end = editText.getSelectionEnd();
+        if (start == len || text.charAt(start) == '\n') {
+            start--;
+        }
+        if (end < len && text.charAt(end) == '\n' && end - 1 > -1) {
+            end--;
+        }
+        while (start - 1 > -1 && text.charAt(start - 1) != '\n') start--;
+        while (start - 1 > -1 && Character.isWhitespace(text.charAt(start - 1))) start--;
+        while (end + 1 < len && text.charAt(end + 1) != '\n') end++;
+        while (end + 1 < len && Character.isWhitespace(text.charAt(end + 1))) end++;
+        if (end + 1 < len) end++;
+        CharSequence charSequence = editText.getText().subSequence(start, end);
+        editText.getText().replace(start, end, Strings.join(".\n\n", charSequence.toString().split("[\\.\r\n]+\\s*")));
 
-        EditText findEditText = view.findViewById(R.id.find);
-        EditText replaceEditText = view.findViewById(R.id.replace);
+    }
 
-        findEditText.setText(activity.getPreferences().getString("find_pattern", null));
-        replaceEditText.setText(activity.getPreferences().getString("replace_pattern", null));
+    static void wrapSelection(EditText editText, String s) {
 
-        new AlertDialog.Builder(activity)
-                .setView(view)
-                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                    String find = findEditText.getText().toString();
-                    String replace = replaceEditText.getText().toString();
-                    activity.getPreferences().edit()
-                            .putString("find_pattern", find)
-                            .putString("replace_pattern", replace)
-                            .apply();
-                    String value = activity.getEditText().getText().toString().replaceAll(
-                            find,
-                            replace
-                    );
-                    activity.getEditText().setText(value.replaceAll("\\\\n", "\n"));
-                    dialog.dismiss();
 
-                })
-                .setNeutralButton("保留匹配项", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String find = findEditText.getText().toString();
-                        activity.getPreferences().edit()
-                                .putString("find_pattern", find)
-                                .apply();
-                        String value = activity.getEditText().getText().toString();
-                        activity.getEditText().setText(Strings.join("", Strings.matchAll(value, find)));
-                        dialog.dismiss();
-                    }
-                })
-                .setNegativeButton("替换选择", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String find = findEditText.getText().toString();
-                        String replace = replaceEditText.getText().toString();
-                        activity.getPreferences().edit()
-                                .putString("find_pattern", find)
-                                .putString("replace_pattern", replace)
-                                .apply();
-                        String value = EditTexts.getSelectionText(activity.getEditText()).toString().replaceAll(
-                                find,
-                                replace
-                        );
-                        activity.getEditText().getText().replace(
-                                activity.getEditText().getSelectionStart(),
-                                activity.getEditText().getSelectionEnd(),
-                                value.replaceAll("\\\\n", "\n"));
-                        dialog.dismiss();
-
-                    }
-                }).show();
+        editText.getText().replace(editText.getSelectionStart(),
+                editText.getSelectionEnd(),
+                String.format("%s%s%s", s, EditTexts.getSelectionText(editText).toString().trim(), s));
     }
 }

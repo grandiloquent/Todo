@@ -21,6 +21,11 @@
                 android:src="@drawable/ic_action_content_cut" />
 
             <ImageButton
+                android:id="@+id/format_hr"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_hr" />
+
+            <ImageButton
                 android:id="@+id/format_title"
                 style="@style/MenuButton"
                 android:src="@drawable/ic_action_title" />

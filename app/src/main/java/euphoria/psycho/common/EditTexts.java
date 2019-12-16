@@ -145,7 +145,22 @@ public class EditTexts {
         text.delete(start, end);
         return value;
     }
-
+    public static String removeRedundancyLines(String text) {
+        String[] pieces = text.trim().split("\n");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0, j = pieces.length; i < j; i++) {
+            String piece = pieces[i];
+            if (Strings.isNullOrWhiteSpace(piece)) {
+                sb.append('\n');
+                while (i + 1 < j && Strings.isNullOrWhiteSpace(pieces[i + 1])) {
+                    i++;
+                }
+            } else {
+                sb.append(piece).append('\n');
+            }
+        }
+        return sb.toString();
+    }
     /*
      *
      * 从光标点向前匹配第一个换行符，匹配成功后，继续向前匹配非空字符，匹配成功后停止
@@ -407,6 +422,14 @@ public class EditTexts {
         editText.setSelection(start);
     }
 
+    public static void paste(EditText editText, String text) {
+        editText.getText().replace(
+                editText.getSelectionStart(),
+                editText.getSelectionEnd(),
+                text
+        );
+    }
+
     public static void selectAt(EditText editText, char[] anchorChars) {
         if (isWhitespace(editText)) return;
         Editable text = editText.getText();
@@ -473,14 +496,6 @@ public class EditTexts {
         CharSequence value = editText.getText().subSequence(start, end);
         editText.setSelection(start, end);
         return value;
-    }
-
-    public static void paste(EditText editText, String text) {
-        editText.getText().replace(
-                editText.getSelectionStart(),
-                editText.getSelectionEnd(),
-                text
-        );
     }
 
     public static String selectLine(EditText editText) {
