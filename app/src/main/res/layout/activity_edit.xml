@@ -20,10 +20,6 @@
                 style="@style/MenuButton"
                 android:src="@drawable/ic_action_content_cut" />
 
-            <ImageButton
-                android:id="@+id/format_hr"
-                style="@style/MenuButton"
-                android:src="@drawable/ic_action_hr" />
 
             <ImageButton
                 android:id="@+id/format_title"
@@ -35,10 +31,6 @@
                 style="@style/MenuButton"
                 android:src="@drawable/ic_action_format_bold" />
 
-            <ImageButton
-                android:id="@+id/format_italic"
-                style="@style/MenuButton"
-                android:src="@drawable/ic_action_format_italic" />
 
             <ImageButton
                 android:id="@+id/format_code"
@@ -55,17 +47,26 @@
                 style="@style/MenuButton"
                 android:src="@drawable/ic_action_format_list_bulleted" />
 
+            <ImageButton
+                android:id="@+id/format_htm"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_image_search" />
+
+            <ImageButton
+                android:id="@+id/format_italic"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_format_italic" />
+
+            <ImageButton
+                android:id="@+id/format_hr"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_hr" />
 
             <ImageButton
                 android:id="@+id/format_functions"
                 style="@style/MenuButton"
                 android:src="@drawable/ic_action_functions" />
 
-
-            <ImageButton
-                android:id="@+id/format_htm"
-                style="@style/MenuButton"
-                android:src="@drawable/ic_action_image_search" />
 
             <ImageButton
                 android:id="@+id/format_table"

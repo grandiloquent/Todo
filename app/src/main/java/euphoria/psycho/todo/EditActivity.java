@@ -154,7 +154,7 @@ public class EditActivity extends Activities {
     private void formatHr() {
         mEditText.getText().insert(
                 mEditText.getSelectionStart(),
-                "\n\n\n---\n\n\n"
+                "\n---\n"
         );
     }
 
