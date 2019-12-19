@@ -199,14 +199,16 @@ public class EditActivity extends Activities {
             String[] strings = string.toString().split("\\.");
             StringBuilder stringBuilder = new StringBuilder();
             for (String s : strings) {
-                stringBuilder.append('-')
+                stringBuilder
+                        .append('-')
                         .append(' ')
                         .append(s.trim())
                         .append(".\n");
             }
-            mEditText.getText().insert(mEditText.getSelectionStart(), stringBuilder.toString());
-        }
-        EditUtils.formatList(this);
+            String s = stringBuilder.toString();
+            mEditText.getText().insert(mEditText.getSelectionStart(), s);
+        } else
+            EditUtils.formatList(this);
     }
 
     private void formatOrder() {
