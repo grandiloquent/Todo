@@ -190,6 +190,22 @@ public class EditActivity extends Activities {
     }
 
     private void formatList() {
+        CharSequence string = EditTexts.getSelectionText(mEditText);
+        if (Strings.isNullOrWhiteSpace(string)) {
+            ClipboardManager manager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            if (manager == null) return;
+            string = Contexts.getText(manager);
+            if (Strings.isNullOrWhiteSpace(string)) return;
+            String[] strings = string.toString().split("\\.");
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String s : strings) {
+                stringBuilder.append('-')
+                        .append(' ')
+                        .append(s.trim())
+                        .append(".\n");
+            }
+            mEditText.getText().insert(mEditText.getSelectionStart(), stringBuilder.toString());
+        }
         EditUtils.formatList(this);
     }
 
