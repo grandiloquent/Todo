@@ -653,8 +653,9 @@ public class Files {
     public static void writeText(File out, String text) {
         try {
             FileOutputStream os = new FileOutputStream(out);
-            OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8");
-            writer.write(text);
+
+            byte[] buf = text.getBytes("UTF-8");
+            os.write(buf);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
