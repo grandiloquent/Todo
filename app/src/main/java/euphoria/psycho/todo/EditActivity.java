@@ -199,6 +199,8 @@ public class EditActivity extends Activities {
             String[] strings = string.toString().split("\\.");
             StringBuilder stringBuilder = new StringBuilder();
             for (String s : strings) {
+
+                if (Strings.isNullOrWhiteSpace(s)) continue;
                 stringBuilder
                         .append('-')
                         .append(' ')

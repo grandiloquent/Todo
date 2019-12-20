@@ -1,17 +1,23 @@
 package euphoria.psycho.common;
+
 import android.database.Cursor;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -22,6 +28,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+
 public class Files {
     public static final String NORMAL_AUDIO_FORMAT = "3gp|aac|flac|gsm|imy|m4a|mid|mkv|mp3|mp4|mxmf|ogg|ota|rtttl|rtx|ts|wav|xmf";
     public static final String SUPPORT_AUDIO_FORMAT = "aac|flac|m4a|mp3|ogg|wav";
@@ -33,6 +40,7 @@ public class Files {
     private static final String TAG = "TAG/" + Files.class.getSimpleName();
     private static final
     char[] sInvalidFileNamechars = {'\"', '<', '>', '|', '\0', (char) 1, (char) 2, (char) 3, (char) 4, (char) 5, (char) 6, (char) 7, (char) 8, (char) 9, (char) 10, (char) 11, (char) 12, (char) 13, (char) 14, (char) 15, (char) 16, (char) 17, (char) 18, (char) 19, (char) 20, (char) 21, (char) 22, (char) 23, (char) 24, (char) 25, (char) 26, (char) 27, (char) 28, (char) 29, (char) 30, (char) 31, ':', '*', '?', '\\', '/'};
+
     public static void closeQuietly(Closeable closeable) {
         try {
             if (closeable != null)
@@ -41,6 +49,7 @@ public class Files {
             e.printStackTrace();
         }
     }
+
     public static void closeSilently(ParcelFileDescriptor fd) {
         try {
             if (fd != null) fd.close();
@@ -48,6 +57,7 @@ public class Files {
             Log.w(TAG, "fail to close", t);
         }
     }
+
     public static void closeSilently(Cursor cursor) {
         try {
             if (cursor != null) cursor.close();
@@ -55,6 +65,7 @@ public class Files {
             Log.w(TAG, "fail to close", t);
         }
     }
+
     public static void closeSilently(Closeable c) {
         if (c == null) return;
         try {
@@ -63,6 +74,7 @@ public class Files {
             Log.w(TAG, "close fail ", t);
         }
     }
+
     public static String[] collectFileNames(File[] files) {
         if (files == null) return null;
         int length = files.length;
@@ -79,6 +91,7 @@ public class Files {
         });
         return strings;
     }
+
     public static String combine(String... paths) {
         if (paths == null) return null;
         if (paths.length == 1) return paths[0];
@@ -88,6 +101,7 @@ public class Files {
         }
         return stringBuilder.append(paths[paths.length - 1]).toString();
     }
+
     public static long copy(String source, OutputStream out) {
         InputStream in = null;
         try {
@@ -105,6 +119,7 @@ public class Files {
         }
         return 0;
     }
+
     public static long copy(InputStream source, OutputStream sink)
             throws IOException {
         long nread = 0L;
@@ -116,6 +131,7 @@ public class Files {
         }
         return nread;
     }
+
     public static long copyInternalUserspace(InputStream in, OutputStream out,
                                              ProgressListener listener, CancellationSignal signal) throws IOException {
         long progress = 0;
@@ -141,6 +157,7 @@ public class Files {
         }
         return progress;
     }
+
     public static File createDirectoryIfNotExists(String path) {
         File dir = new File(path);
          /*
@@ -178,6 +195,7 @@ public class Files {
         }
         return dir;
     }
+
     public static void deleteFiles(String... paths) {
         for (String f : paths) {
             File file = new File(f);
@@ -208,6 +226,7 @@ public class Files {
             }
         }
     }
+
     public static File[] getAudioFiles(File dir, boolean isAll) {
         final Pattern filter = Pattern.compile("\\.(?:" + (isAll ? SUPPORT_AUDIO_FORMAT : NORMAL_AUDIO_FORMAT) + ")$");
         return dir.listFiles(new FileFilter() {
@@ -221,6 +240,7 @@ public class Files {
             }
         });
     }
+
     public static String getDirectoryName(String path) {
         if (path != null) {
             int i = path.length();
@@ -229,6 +249,7 @@ public class Files {
         }
         return null;
     }
+
     public static String getFileName(String path) {
         if (path != null) {
             int length = path.length();
@@ -258,6 +279,7 @@ public class Files {
         }
         return path;
     }
+
     public static String getFileNameWithoutExtension(String path) {
         path = getFileName(path);
         if (path != null) {
@@ -269,6 +291,7 @@ public class Files {
         }
         return null;
     }
+
     public static String getValidFileName(String value, char c) {
         int len = Math.min(125, value.length());
         char[] buffer = new char[len];
@@ -284,6 +307,7 @@ public class Files {
         }
         return new String(buffer).trim();
     }
+
     public static void moveFiles(File dir, int count) {
         File[] files = dir.listFiles();
         if (files == null || files.length == 0) return;
@@ -303,6 +327,7 @@ public class Files {
             files[i].renameTo(new File(outdir, files[i].getName()));
         }
     }
+
     public static byte[] read(InputStream source, int initialSize) throws IOException {
         int capacity = initialSize;
         byte[] buf = new byte[capacity];
@@ -346,6 +371,7 @@ public class Files {
         }
         return (capacity == nread) ? buf : Arrays.copyOf(buf, nread);
     }
+
     public static byte[] readAllBytes(File path) {
         InputStream in = null;
         try {
@@ -365,6 +391,7 @@ public class Files {
             }
         }
     }
+
     public static List<String> readAllLines(String path, Charset cs) {
         BufferedReader reader = null;
         try {
@@ -388,6 +415,7 @@ public class Files {
         }
         return null;
     }
+
     public static byte[] readFully(File file) throws IOException {
         FileInputStream stream = new FileInputStream(file);
         try {
@@ -415,6 +443,7 @@ public class Files {
             stream.close();
         }
     }
+
     public static byte[] readFully(InputStream stream) throws IOException {
         try {
             int pos = 0;
@@ -524,6 +553,7 @@ public class Files {
             stream.close();
         }
     }
+
     public static String readGzipStreamToEnd(InputStream inputStream, String charsetName) {
         GZIPInputStream in = null;
         try {
@@ -541,6 +571,7 @@ public class Files {
         }
         return null;
     }
+
     public static String readToEnd(InputStream inputStream, String charsetName) {
         try {
          /*
@@ -618,6 +649,22 @@ public class Files {
         }
         return null;
     }
+
+    public static void writeText(File out, String text) {
+        try {
+            FileOutputStream os = new FileOutputStream(out);
+            OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8");
+            writer.write(text);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public interface ProgressListener {
         public void onProgress(long progress);
     }

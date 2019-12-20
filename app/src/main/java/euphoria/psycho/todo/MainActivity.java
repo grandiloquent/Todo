@@ -22,14 +22,22 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import euphoria.psycho.Browsers;
 import euphoria.psycho.common.Activities;
 import euphoria.psycho.common.Contexts;
+import euphoria.psycho.common.Files;
 import euphoria.psycho.common.Interfaces.Listener;
 import euphoria.psycho.common.Logs;
+import euphoria.psycho.common.Strings;
 import euphoria.psycho.common.Threads;
 import euphoria.psycho.common.Views;
 
@@ -62,13 +70,27 @@ public class MainActivity extends Activities implements OnItemClickListener {
     }
 
     private void deleteNote(int position) {
-        new AlertDialog.Builder(this)
-                .setMessage(String.format("确定删除 ‘%s’ 吗？\n", mItems.get(position).second))
-                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                    checkDatabase();
-                    mDatabase.delete(mItems.get(position).first);
-                    refreshListView();
-                }).show();
+//        new AlertDialog.Builder(this)
+//                .setMessage(String.format("确定删除 ‘%s’ 吗？\n", mItems.get(position).second))
+//                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+//
+//                }).show();
+        checkDatabase();
+        Pair<String, String> note = mDatabase.fetchNote(mItems.get(position).first);
+
+        File dir = new File(Environment.getExternalStorageDirectory(), "Notes");
+        if (!dir.isDirectory()) dir.mkdir();
+
+        String n = note.first;
+        if (n.startsWith("#")) {
+            n = Strings.substringAfter(n, ' ').trim();
+        }
+        String title = Files.getValidFileName(n, ' ') + ".md";
+        File out = new File(dir, title);
+        Files.writeText(out, note.second);
+        mDatabase.delete(mItems.get(position).first);
+
+        refreshListView();
     }
 
     private void editNote(int position) {
