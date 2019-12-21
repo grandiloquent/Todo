@@ -5,15 +5,19 @@
 #include <memory.h>
 #define isnum(x) ((x) >= '0' && (x) <= '9')
 
-int indexof(const char *s, const char *find) {
+int indexof(const char* s, const char* find)
+{
     char c, sc;
     size_t len;
     int count = 0;
 
-    if ((c = *find++) != 0) {
+    if ((c = *find++) != 0)
+    {
         len = strlen(find);
-        do {
-            do {
+        do
+        {
+            do
+            {
                 if ((sc = *s++) == 0)
                     return -1;
                 count++;
@@ -46,10 +50,24 @@ char* toggle_list(const char* str)
             tok += strlen(prefix);
         }
 
+        // trim
+        while (*tok && isspace(*tok))
+            tok++;
+        size_t tok_len = strlen(tok);
+        while (tok_len > 0)
+        {
+            tok_len--;
+            if (isspace(*(tok + tok_len)))
+                *(tok + tok_len) = 0;
+            else
+                break;
+        }
+        // trim
+        
         while (*tok)
         {
-            if (!isspace(*tok))
-                *tmp++ = *tok;
+
+            *tmp++ = *tok;
             tok++;
         }
         *tmp++ = '\n';
@@ -61,7 +79,8 @@ char* toggle_list(const char* str)
     free(buf);
     return out;
 }
-bool iswhitespace(const char *s) {
+bool iswhitespace(const char* s)
+{
     if (!s)
         return true;
     while (*s)
@@ -71,19 +90,24 @@ bool iswhitespace(const char *s) {
     return true;
 }
 
-char *remove_redundancy(const char *s) {
+char* remove_redundancy(const char* s)
+{
     size_t len = strlen(s);
-    char *r = malloc(len + 1);
+    char* r = malloc(len + 1);
     memset(r, 0, len + 1);
-    char *t = r;
+    char* t = r;
 
-    while (*s) {
-        if (*s == '\n') {
+    while (*s)
+    {
+        if (*s == '\n')
+        {
             *t++ = '\n';
             char ch = 0;
-            while (*++s && isspace(*s)) {
+            while (*++s && isspace(*s))
+            {
 
-                if (ch == 0 && *s == '\n') {
+                if (ch == 0 && *s == '\n')
+                {
 
                     ch = '\n';
                 }
@@ -154,11 +178,21 @@ char* toggle_number_list(const char* str)
             {
             }
         }
-
+        while (*tok && isspace(*tok))
+            tok++;
+        size_t tok_len = strlen(tok);
+        while (tok_len > 0)
+        {
+            tok_len--;
+            if (isspace(*(tok + tok_len)))
+                *(tok + tok_len) = 0;
+            else
+                break;
+        }
         while (*tok)
         {
-            if (!isspace(*tok))
-                *tmp++ = *tok;
+
+            *tmp++ = *tok;
             tok++;
         }
         *tmp++ = '\n';
