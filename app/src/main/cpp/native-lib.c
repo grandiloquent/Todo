@@ -44,6 +44,28 @@ Java_euphoria_psycho_todo_NativeUtils_removeRedundancy(JNIEnv *env, jclass type,
     return ret_str;
 }
 
+JNIEXPORT jstring JNICALL
+Java_euphoria_psycho_todo_NativeUtils_toggleList(JNIEnv *env, jclass type, jstring text_) {
+    const char *text = (*env)->GetStringUTFChars(env, text_, 0);
+
+    char *ret = toggle_list(text);
+
+    (*env)->ReleaseStringUTFChars(env, text_, text);
+    jstring ret_str = (*env)->NewStringUTF(env, ret);
+    free(ret);
+    return ret_str;
+}
+JNIEXPORT jstring JNICALL
+Java_euphoria_psycho_todo_NativeUtils_toggleNumberList(JNIEnv *env, jclass type, jstring text_) {
+    const char *text = (*env)->GetStringUTFChars(env, text_, 0);
+
+    char *ret = toggle_number_list(text);
+
+    (*env)->ReleaseStringUTFChars(env, text_, text);
+    jstring ret_str = (*env)->NewStringUTF(env, ret);
+    free(ret);
+    return ret_str;
+}
 
 // |HTML_ESCAPE|HTML_SAFELINK
 #define HTML_RENDER_FLAGS (HTML_USE_XHTML)
@@ -88,7 +110,7 @@ Java_euphoria_psycho_todo_NativeUtils_renderMarkdown(JNIEnv *env, jclass type, j
     bufrelease(output_buf);
     FILE *f = fopen(outFile, "w");
     fputs(buf, f);
-    fflush(f);
+    //fflush(f);
     fclose(f);
     free(buf);
 

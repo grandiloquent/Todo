@@ -190,6 +190,22 @@ public class EditActivity extends Activities {
     }
 
     private void formatList() {
+
+        EditUtils.selectWholeLines(mEditText);
+        CharSequence charSequence = EditTexts.getSelectionText(mEditText);
+        if (Strings.isNullOrWhiteSpace(charSequence)) return;
+
+        String s = NativeUtils.toggleList(charSequence.toString());
+
+        mEditText.getText().replace(
+                mEditText.getSelectionStart(),
+                mEditText.getSelectionEnd(),
+                s
+        );
+        mEditText.setSelection(mEditText.getSelectionStart());
+    }
+
+    private void formatListClipboard() {
         CharSequence string = EditTexts.getSelectionText(mEditText);
         if (Strings.isNullOrWhiteSpace(string)) {
             ClipboardManager manager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
@@ -209,8 +225,22 @@ public class EditActivity extends Activities {
             }
             String s = stringBuilder.toString();
             mEditText.getText().insert(mEditText.getSelectionStart(), s);
-        } else
-            EditUtils.formatList(this);
+        }
+    }
+
+    private void formatListNumbered() {
+        EditUtils.selectWholeLines(mEditText);
+        CharSequence charSequence = EditTexts.getSelectionText(mEditText);
+        if (Strings.isNullOrWhiteSpace(charSequence)) return;
+
+        String s = NativeUtils.toggleNumberList(charSequence.toString());
+
+        mEditText.getText().replace(
+                mEditText.getSelectionStart(),
+                mEditText.getSelectionEnd(),
+                s
+        );
+        mEditText.setSelection(mEditText.getSelectionStart());
     }
 
     private void formatOrder() {
@@ -308,6 +338,10 @@ public class EditActivity extends Activities {
         findViewById(R.id.format_line_spacing).setOnClickListener(v -> formatLineSpacing());
         findViewById(R.id.format_link).setOnClickListener(v -> formatLink());
         findViewById(R.id.format_list).setOnClickListener(v -> formatList());
+        findViewById(R.id.format_list_clipboard).setOnClickListener(v -> formatListClipboard());
+
+        findViewById(R.id.format_number_list).setOnClickListener(v -> formatListNumbered());
+
         findViewById(R.id.format_order).setOnClickListener(v -> formatOrder());
         findViewById(R.id.format_reorder).setOnClickListener(v -> formatReorder());
         findViewById(R.id.format_search).setOnClickListener(v -> formatSearch());

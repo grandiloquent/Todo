@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <malloc.h>
 #include <memory.h>
+#define isnum(x) ((x) >= '0' && (x) <= '9')
 
 int indexof(const char *s, const char *find) {
     char c, sc;
@@ -23,6 +24,43 @@ int indexof(const char *s, const char *find) {
     return count;
 }
 
+char* toggle_list(const char* str)
+{
+    const char* prefix = "- ";
+
+    char* out = malloc(strlen(str) * 2);
+    char* tmp = out;
+    char* buf = strdup(str);
+    strcpy(buf, str);
+    char* tok = strtok(buf, "\n");
+    while (tok)
+    {
+        int add = strncmp(tok, prefix, strlen(prefix)) != 0;
+        if (add)
+        {
+            *tmp++ = '-';
+            *tmp++ = ' ';
+        }
+        else
+        {
+            tok += strlen(prefix);
+        }
+
+        while (*tok)
+        {
+            if (!isspace(*tok))
+                *tmp++ = *tok;
+            tok++;
+        }
+        *tmp++ = '\n';
+
+        tok = strtok(0, "\n");
+    }
+    *tmp = 0;
+
+    free(buf);
+    return out;
+}
 bool iswhitespace(const char *s) {
     if (!s)
         return true;
@@ -59,4 +97,77 @@ char *remove_redundancy(const char *s) {
         *t++ = *s++;
     }
     return r;
+}
+int is_number_list(const char* str)
+{
+
+    const char* tmp = str;
+    int r = 0;
+
+    while (*tmp)
+    {
+        if (!isnum(*tmp))
+        {
+            if (*tmp == '.' && *tmp != *str)
+                r = 1;
+            break;
+        }
+        tmp++;
+    }
+    if (r)
+        return *tmp++ && *tmp == ' ';
+    return r;
+}
+
+char* toggle_number_list(const char* str)
+{
+    const char* prefix = "- ";
+
+    char* out = malloc(strlen(str) * 2);
+    char* tmp = out;
+    char* buf = strdup(str);
+    strcpy(buf, str);
+    char* tok = strtok(buf, "\n");
+    size_t count = 0;
+    while (tok)
+    {
+        if (iswhitespace(tok))
+            continue;
+        count++;
+
+        int add = !is_number_list(tok);
+
+        if (add)
+        {
+            char num_buf[10];
+            memset(num_buf, 0, 10);
+            snprintf(num_buf, 10, "%d. ", count);
+            size_t i = 0;
+            while (i < 10 && num_buf[i] != 0)
+            {
+                *tmp++ = num_buf[i++];
+            }
+        }
+        else
+        {
+            while (*tok && *tok++ != ' ')
+            {
+            }
+        }
+
+        while (*tok)
+        {
+            if (!isspace(*tok))
+                *tmp++ = *tok;
+            tok++;
+        }
+        *tmp++ = '\n';
+
+        tok = strtok(0, "\n");
+    }
+    *tmp = 0;
+    printf("%s\n", out);
+
+    free(buf);
+    return out;
 }

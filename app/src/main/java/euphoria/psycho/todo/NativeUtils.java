@@ -7,6 +7,10 @@ public class NativeUtils {
 
     public static native String removeRedundancy(String text);
 
+    public static native String toggleList(String text);
+
+    public static native String toggleNumberList(String text);
+
     public static native void renderMarkdown(String text, String outFile);
 
     public static native String googleTranslate(String word, boolean englishToChinese);
