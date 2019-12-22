@@ -462,6 +462,9 @@ public class EditUtils {
                 if (found) break;
             }
         }
+        if (start > 0) {
+            start++;
+        }
         editText.setSelection(start, end);
 
 //        while (start - 1 > -1 && text.charAt(start - 1) != '\n') {

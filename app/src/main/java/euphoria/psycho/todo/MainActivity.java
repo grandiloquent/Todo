@@ -44,7 +44,7 @@ import euphoria.psycho.common.Views;
 public class MainActivity extends Activities implements OnItemClickListener {
     private static final int MENU_ADD = 2;
     private static final int MENU_DOWNLOAD = 3;
-    private static final int MENU_EDIT = 5;
+    private static final int MENU_DICTIONARY = 5;
     private static final int MENU_UPLOAD = 1;
     private static final int MENU_SETTINGS = 6;
     private static final int MENU_BROWSER = 8;
@@ -269,6 +269,7 @@ public class MainActivity extends Activities implements OnItemClickListener {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(0, MENU_DICTIONARY, 0, "字典");
         menu.add(0, MENU_UPLOAD, 0, "上传");
         menu.add(0, MENU_DOWNLOAD, 0, "下载");
         menu.add(0, MENU_SETTINGS, 0, "设置");
@@ -308,8 +309,16 @@ public class MainActivity extends Activities implements OnItemClickListener {
                 Intent browser = new Intent(this, Browsers.class);
                 startActivity(browser);
                 return true;
+            case MENU_DICTIONARY:
+                launchDictionary();
+                return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void launchDictionary() {
+        Intent i = new Intent(this, DictionaryService.class);
+        startService(i);
     }
 
     private void menuSettings() {
