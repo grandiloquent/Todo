@@ -48,13 +48,14 @@ public class MainActivity extends Activities implements OnItemClickListener {
     private static final int MENU_UPLOAD = 1;
     private static final int MENU_SETTINGS = 6;
     private static final int MENU_BROWSER = 8;
+    private static final int MENU_EXPLAIN = 9;
+
 
     private static final int REQUEST_CODE_EDIT = 679;
     private int mBackgroundId;
     private List<Pair<Integer, String>> mItems = new ArrayList<>();
     private BaseAdapter mAdapter;
     private int mPadding;
-    private ListView mListView;
     private Database mDatabase;
     private EditText mEditText;
     private String mFilterString;
@@ -244,7 +245,6 @@ public class MainActivity extends Activities implements OnItemClickListener {
             }
         };
         listView.setAdapter(mAdapter);
-        mListView = listView;
         refreshListView();
     }
 
@@ -269,7 +269,8 @@ public class MainActivity extends Activities implements OnItemClickListener {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0, MENU_DICTIONARY, 0, "字典");
+        menu.add(0, MENU_DICTIONARY, 0, "开启字典服务");
+        menu.add(0, MENU_EXPLAIN, 0, "字典");
         menu.add(0, MENU_UPLOAD, 0, "上传");
         menu.add(0, MENU_DOWNLOAD, 0, "下载");
         menu.add(0, MENU_SETTINGS, 0, "设置");
@@ -312,6 +313,10 @@ public class MainActivity extends Activities implements OnItemClickListener {
             case MENU_DICTIONARY:
                 launchDictionary();
                 return true;
+            case MENU_EXPLAIN:
+                DictionaryWindow.getInstance(this).show(Contexts.getText().toString().trim());
+                return true;
+
         }
         return super.onOptionsItemSelected(item);
     }

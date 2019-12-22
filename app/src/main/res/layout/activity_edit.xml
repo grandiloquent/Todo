@@ -33,20 +33,20 @@
                 android:src="@drawable/ic_action_code" />
 
             <ImageButton
+                android:id="@+id/format_list"
+                style="@style/MenuButton"
+                android:src="@drawable/ic_action_format_list_bulleted" />
+
+            <ImageButton
                 android:id="@+id/format_number_list"
                 style="@style/MenuButton"
                 android:src="@drawable/ic_action_format_list_numbered" />
+
 
             <ImageButton
                 android:id="@+id/format_list_clipboard"
                 style="@style/MenuButton"
                 android:src="@drawable/ic_action_format_list_bulleted" />
-            <ImageButton
-                android:id="@+id/format_list"
-                style="@style/MenuButton"
-                android:src="@drawable/ic_action_format_list_bulleted" />
-
-
 
             <ImageButton
                 android:id="@+id/format_htm"

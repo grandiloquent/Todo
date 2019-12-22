@@ -37,28 +37,26 @@ class DictionaryWindow {
     private static final int DEFAULT_MARGIN = 24;
     private final Context mContext;
     private WindowManager mWindowManager;
-    private Point mScreenSize;
     private LayoutParams mLayoutParams;
-    private int mPadding;
     private FrameLayout mView;
     private TextView mTextView;
     private boolean mIsShowing;
     private boolean mHasPermission;
     private static DictionaryWindow sDictionaryWindow;
 
-    DictionaryWindow(Context context) {
+    private DictionaryWindow(Context context) {
         mContext = context;
         initialize();
         DisplayMetrics displayMetrics = new DisplayMetrics();
 
         mWindowManager.getDefaultDisplay().getMetrics(displayMetrics);
 
-        mScreenSize = new Point(displayMetrics.widthPixels, displayMetrics.heightPixels);
+        Point screenSize = new Point(displayMetrics.widthPixels, displayMetrics.heightPixels);
         mLayoutParams = makeLayoutParams();
         mLayoutParams.width = LayoutParams.MATCH_PARENT;
         mLayoutParams.height = LayoutParams.MATCH_PARENT;
 
-        mPadding = Views.dp2px(displayMetrics, 12);
+        int padding = Views.dp2px(displayMetrics, 12);
 
         mView = new FrameLayout(mContext);
 
@@ -66,7 +64,7 @@ class DictionaryWindow {
         if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
             scrollView.setBackground(new ColorDrawable(0xFFF2F2F2));
         }
-        scrollView.setPadding(mPadding, mPadding, mPadding, mPadding);
+        scrollView.setPadding(padding, padding, padding, padding);
 
         mTextView = new TextView(mContext);
         mTextView.setTextIsSelectable(true);
@@ -74,11 +72,11 @@ class DictionaryWindow {
         int margin = Views.dp2px(displayMetrics, DEFAULT_MARGIN);
 
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                mScreenSize.x - margin,
-                mScreenSize.y / 5);
+                screenSize.x - margin,
+                screenSize.y / 5);
 
         params.leftMargin = margin >> 1;
-        params.topMargin = mScreenSize.y - mScreenSize.y / 5 - margin;
+        params.topMargin = screenSize.y - screenSize.y / 5 - margin;
 
         mView.setOnClickListener(new OnClickListener() {
             @Override
@@ -116,12 +114,12 @@ class DictionaryWindow {
         mIsShowing = true;
     }
 
-    public void hide() {
+    private void hide() {
         mWindowManager.removeView(mView);
         mIsShowing = false;
     }
 
-    public static boolean checkPermission(Activity context, int requestCode) {
+    private static boolean checkPermission(Activity context, int requestCode) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(context)) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,

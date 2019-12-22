@@ -11,13 +11,18 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.IBinder;
 
+import java.util.regex.Pattern;
+
 import euphoria.psycho.common.Contexts;
 import euphoria.psycho.common.Strings;
 
 public class DictionaryService extends Service {
     ClipboardManager mClipboardManager;
     OnPrimaryClipChangedListener mOnPrimaryClipChangedListener;
-    CharSequence mCharSequence;
+    String mPreviousWord;
+
+    Pattern mWordPattern = Pattern.compile("[a-zA-Z]+");
+
 
     @Override
     public void onCreate() {
@@ -29,12 +34,13 @@ public class DictionaryService extends Service {
             public void onPrimaryClipChanged() {
                 CharSequence charSequence = Contexts.getText(mClipboardManager);
                 if (Strings.isNullOrWhiteSpace(charSequence)) return;
-                if (mCharSequence != null && mCharSequence.equals(charSequence)) {
+                String word = charSequence.toString();
+                if (!mWordPattern.matcher(word).matches() || word.equals(mPreviousWord)) {
                     return;
                 } else {
-                    mCharSequence = charSequence;
+                    mPreviousWord = word;
                 }
-                DictionaryWindow.getInstance(DictionaryService.this).show(charSequence.toString());
+                DictionaryWindow.getInstance(DictionaryService.this).show(word);
             }
         };
         mClipboardManager.addPrimaryClipChangedListener(mOnPrimaryClipChangedListener);
