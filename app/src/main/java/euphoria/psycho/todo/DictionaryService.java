@@ -29,7 +29,7 @@ public class DictionaryService extends Service {
             public void onPrimaryClipChanged() {
                 CharSequence charSequence = Contexts.getText(mClipboardManager);
                 if (Strings.isNullOrWhiteSpace(charSequence)) return;
-                if (mCharSequence.equals(charSequence)) {
+                if (mCharSequence != null && mCharSequence.equals(charSequence)) {
                     return;
                 } else {
                     mCharSequence = charSequence;
