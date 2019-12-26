@@ -264,15 +264,15 @@ public class EditUtils {
     static void formatTitle(EditActivity activity) {
         // Pattern pattern = Pattern.compile("[\"<>|\0:*?/\\\\]+");
 
-        if (EditTexts.indexBefore(activity.getEditText(), '#') == -1) {
-            EditTexts.moveNextChar(activity.getEditText());
-            activity.getClipboardManager().setPrimaryClip(ClipData.newPlainText(null,
-                    activity.getEditText().getText().subSequence(0, activity.getEditText().getSelectionStart())));
-            activity.getEditText().getText().replace(0,
-                    activity.getEditText().getSelectionStart(),
-                    "# ");
-            return;
-        }
+//        if (EditTexts.indexBefore(activity.getEditText(), '#') == -1) {
+//            EditTexts.moveNextChar(activity.getEditText());
+//            activity.getClipboardManager().setPrimaryClip(ClipData.newPlainText(null,
+//                    activity.getEditText().getText().subSequence(0, activity.getEditText().getSelectionStart())));
+//            activity.getEditText().getText().replace(0,
+//                    activity.getEditText().getSelectionStart(),
+//                    "# ");
+//            return;
+//        }
 
         int start = getLineStart(activity.getEditText());
 
@@ -545,5 +545,9 @@ public class EditUtils {
         editText.getText().replace(editText.getSelectionStart(),
                 editText.getSelectionEnd(),
                 String.format("%s%s%s", s, EditTexts.getSelectionText(editText).toString().trim(), s));
+    }
+
+    static void insert(EditText editText, String s) {
+        editText.getText().insert(editText.getSelectionStart(), s);
     }
 }

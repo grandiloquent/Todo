@@ -83,8 +83,46 @@ public class EditActivity extends Activities {
 
     private void formatCode() {
         String s = EditTexts.getSelectionText(mEditText).toString().trim();
+        if (s.length() == 0) {
+            CharSequence c = Contexts.getText();
+            if (!Strings.isNullOrWhiteSpace(c)) {
+                String sourceString = c.toString();
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("\n```\n");
+                String tab = "  ";
+                int count = 0;
+                for (int i = 0; i < sourceString.length(); i++) {
+                    if (sourceString.charAt(i) == '{') {
+                        count++;
+                        sb.append("\n{");
+                        continue;
+                    }
+                    if (sourceString.charAt(i) == '}') {
+                        count--;
+                        for (int j = 0; j < count; j++) {
+                            sb.append(tab);
+                        }
+                        sb.append("\n}");
+                        continue;
+                    }
+                    if (sourceString.charAt(i) == ';') {
+                        sb.append(";\n");
+
+                        for (int j = 0; j < count; j++) {
+                            sb.append(tab);
+                        }
+                        continue;
+                    }
+                    sb.append(sourceString.charAt(i));
+                }
+                sb.append("\n```\n");
+                return;
+            }
+        }
         if (s.length() == 0
                 || s.contains("\n")) {
+
             EditUtils.wrapSelection(mEditText, "\n```\n");
 
         } else {
