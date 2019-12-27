@@ -88,44 +88,44 @@ public class EditActivity extends Activities {
             if (!Strings.isNullOrWhiteSpace(c)) {
                 String sourceString = c.toString();
 
-                StringBuilder sb = new StringBuilder();
-                sb.append("\n```\n");
-                String tab = "  ";
-                int count = 0;
-                for (int i = 0; i < sourceString.length(); i++) {
-                    if (sourceString.charAt(i) == '\n' || sourceString.charAt(i) == '\r' ||
-                            sourceString.charAt(i) == '\t')
-                        continue;
-                    
-                    if (sourceString.charAt(i) == '{') {
-                        count++;
-                        sb.append("{\n");
-                        for (int j = 0; j < count; j++) {
-                            sb.append(tab);
-                        }
-                        continue;
-                    }
-                    if (sourceString.charAt(i) == '}') {
-                        sb.append('\n');
-                        count--;
-                        for (int j = 0; j < count; j++) {
-                            sb.append(tab);
-                        }
-                        sb.append("}");
-                        continue;
-                    }
-                    if (sourceString.charAt(i) == ';') {
-                        sb.append(";\n");
-
-                        for (int j = 0; j < count; j++) {
-                            sb.append(tab);
-                        }
-                        continue;
-                    }
-                    sb.append(sourceString.charAt(i));
-                }
-                sb.append("\n```\n");
-                EditUtils.insert(mEditText, sb.toString());
+                String sb = "\n```\n" +
+//                String tab = "  ";
+//                int count = 0;
+//                for (int i = 0; i < sourceString.length(); i++) {
+//                    if (sourceString.charAt(i) == '\n' || sourceString.charAt(i) == '\r' ||
+//                            sourceString.charAt(i) == '\t')
+//                        continue;
+//
+//                    if (sourceString.charAt(i) == '{') {
+//                        count++;
+//                        sb.append("{\n");
+//                        for (int j = 0; j < count; j++) {
+//                            sb.append(tab);
+//                        }
+//                        continue;
+//                    }
+//                    if (sourceString.charAt(i) == '}') {
+//                        sb.append('\n');
+//                        count--;
+//                        for (int j = 0; j < count; j++) {
+//                            sb.append(tab);
+//                        }
+//                        sb.append("}");
+//                        continue;
+//                    }
+//                    if (sourceString.charAt(i) == ';') {
+//                        sb.append(";\n");
+//
+//                        for (int j = 0; j < count; j++) {
+//                            sb.append(tab);
+//                        }
+//                        continue;
+//                    }
+//                    sb.append(sourceString.charAt(i));
+//                }
+                        sourceString +
+                        "\n```\n";
+                EditUtils.insert(mEditText, sb);
                 return;
             }
         }

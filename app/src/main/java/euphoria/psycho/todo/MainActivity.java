@@ -1,8 +1,10 @@
 package euphoria.psycho.todo;
 
 import android.Manifest.permission;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.os.Build.VERSION_CODES;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.Editable;
@@ -24,6 +26,7 @@ import android.widget.TextView;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -49,6 +52,7 @@ public class MainActivity extends Activities implements OnItemClickListener {
     private static final int MENU_SETTINGS = 6;
     private static final int MENU_BROWSER = 8;
     private static final int MENU_EXPLAIN = 9;
+    private static final int MENU_EXPORT = 10;
 
 
     private static final int REQUEST_CODE_EDIT = 679;
@@ -275,6 +279,7 @@ public class MainActivity extends Activities implements OnItemClickListener {
         menu.add(0, MENU_DOWNLOAD, 0, "下载");
         menu.add(0, MENU_SETTINGS, 0, "设置");
         menu.add(0, MENU_BROWSER, 0, "浏览器");
+        menu.add(0, MENU_EXPORT, 0, "导出");
 
         MenuItem addMenuItem = menu.add(0, MENU_ADD, 0, "添加");
         addMenuItem.setIcon(R.drawable.ic_action_add);
@@ -316,9 +321,38 @@ public class MainActivity extends Activities implements OnItemClickListener {
             case MENU_EXPLAIN:
                 DictionaryWindow.getInstance(this).show(Contexts.getText().toString().trim());
                 return true;
+            case MENU_EXPORT:
+                menuExport();
+                return true;
 
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @TargetApi(VERSION_CODES.O)
+    private void menuExport() {
+        Path targetDirectory = Paths.get(Environment.getExternalStorageDirectory().getAbsolutePath(), "Notes", "Notes");
+
+        if (!java.nio.file.Files.isDirectory(targetDirectory)) {
+            try {
+                java.nio.file.Files.createDirectory(targetDirectory);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        checkDatabase();
+
+        List<Pair<Integer, String>> titles = mDatabase.fetchTitles(null);
+        for (Pair<Integer, String> title : titles) {
+            Pair<String, String> note = mDatabase.fetchNote(title.first);
+            try {
+                java.nio.file.Files.write(targetDirectory.resolve(Files.getValidFileName(note.first, ' ')
+                        + ".md"), note.second.getBytes("UTF-8"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     private void launchDictionary() {

@@ -13,6 +13,7 @@ import android.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
+import euphoria.psycho.common.Strings;
 import euphoria.psycho.common.Views;
 
 public class Database extends SQLiteOpenHelper {
@@ -53,10 +54,10 @@ public class Database extends SQLiteOpenHelper {
                 String title = cursor.getString(1);
                 if (title.contains(filter))
                     strings.add(Pair.create(cursor.getInt(0),
-                            title));
+                            Strings.substringAfter(title, "# ")));
 
             } else
-                strings.add(Pair.create(cursor.getInt(0), cursor.getString(1)));
+                strings.add(Pair.create(cursor.getInt(0), Strings.substringAfter(cursor.getString(1), "# ")));
         }
         cursor.close();
         return strings;
