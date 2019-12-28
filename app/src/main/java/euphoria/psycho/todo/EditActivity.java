@@ -340,15 +340,16 @@ public class EditActivity extends Activities {
         checkDatabase();
         String content = mEditText.getText().toString();
         if (content.trim().length() == 0) return;
+        String title = Strings.substringAfter(Strings.substringBefore(content.trim(), '\n'), "# ");
         if (mNote == null) {
             mNote = new Note();
 
-            mNote.Title = Strings.substringBefore(content.trim(), '\n');
+            mNote.Title = title;
             mNote.Content = content;
             mDatabase.insert(mNote);
 
         } else {
-            mNote.Title = Strings.substringBefore(content.trim(), '\n');
+            mNote.Title = title;
             mNote.Content = content;
             mDatabase.update(mNote);
         }

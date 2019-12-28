@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -45,16 +46,15 @@ import euphoria.psycho.common.Threads;
 import euphoria.psycho.common.Views;
 
 public class MainActivity extends Activities implements OnItemClickListener {
+    private static final String KEY_FILER_STRING = "filter";
     private static final int MENU_ADD = 2;
-    private static final int MENU_DOWNLOAD = 3;
-    private static final int MENU_DICTIONARY = 5;
-    private static final int MENU_UPLOAD = 1;
-    private static final int MENU_SETTINGS = 6;
     private static final int MENU_BROWSER = 8;
+    private static final int MENU_DICTIONARY = 5;
+    private static final int MENU_DOWNLOAD = 3;
     private static final int MENU_EXPLAIN = 9;
     private static final int MENU_EXPORT = 10;
-
-
+    private static final int MENU_SETTINGS = 6;
+    private static final int MENU_UPLOAD = 1;
     private static final int REQUEST_CODE_EDIT = 679;
     private int mBackgroundId;
     private List<Pair<Integer, String>> mItems = new ArrayList<>();
@@ -63,7 +63,6 @@ public class MainActivity extends Activities implements OnItemClickListener {
     private Database mDatabase;
     private EditText mEditText;
     private String mFilterString;
-    private static final String KEY_FILER_STRING = "filter";
 
     private void checkDatabase() {
         if (mDatabase == null) {
@@ -90,6 +89,12 @@ public class MainActivity extends Activities implements OnItemClickListener {
         if (n.startsWith("#")) {
             n = Strings.substringAfter(n, ' ').trim();
         }
+        if (n.contains(":")) {
+            dir = new File(dir, Files.getValidFileName(Strings.substringBefore(n, ':').trim(), ' '));
+            if (!dir.isDirectory()) dir.mkdirs();
+
+            n = Strings.substringAfter(n, ':').trim();
+        }
         String title = Files.getValidFileName(n, ' ') + ".md";
         File out = new File(dir, title);
         Files.writeText(out, note.second);
@@ -102,6 +107,11 @@ public class MainActivity extends Activities implements OnItemClickListener {
         Intent intent = new Intent(this, EditActivity.class);
         intent.putExtra("id", mItems.get(position).first);
         startActivityForResult(intent, REQUEST_CODE_EDIT);
+    }
+
+    private void launchDictionary() {
+        Intent i = new Intent(this, DictionaryService.class);
+        startService(i);
     }
 
     private void menuAdd() {
@@ -131,6 +141,49 @@ public class MainActivity extends Activities implements OnItemClickListener {
                 }
             });
         });
+    }
+
+    @TargetApi(VERSION_CODES.O)
+    private void menuExport() {
+        Path targetDirectory = Paths.get(Environment.getExternalStorageDirectory().getAbsolutePath(), "Notes", "Notes");
+
+        if (!java.nio.file.Files.isDirectory(targetDirectory)) {
+            try {
+                java.nio.file.Files.createDirectory(targetDirectory);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        checkDatabase();
+
+        List<Pair<Integer, String>> titles = mDatabase.fetchTitles(null);
+        for (Pair<Integer, String> title : titles) {
+            Pair<String, String> note = mDatabase.fetchNote(title.first);
+            try {
+                if (note.first.contains(":")) {
+                    String dir = Strings.substringBefore(note.first, ':').trim();
+                    Path t = targetDirectory.resolve(dir);
+                    if (!java.nio.file.Files.isDirectory(t))
+                        java.nio.file.Files.createDirectory(t);
+
+                    java.nio.file.Files.write(t.resolve(Files.getValidFileName(Strings.substringAfter(note.first,':').trim(), ' ')
+                            + ".md"), note.second.getBytes(StandardCharsets.UTF_8));
+                } else {
+                    java.nio.file.Files.write(targetDirectory.resolve(Files.getValidFileName(note.first, ' ')
+                            + ".md"), note.second.getBytes(StandardCharsets.UTF_8));
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    private void menuSettings() {
+        Intent settings = new Intent(this, SettingsActivity.class);
+
+        startActivity(settings);
     }
 
     private void menuSync() {
@@ -176,19 +229,19 @@ public class MainActivity extends Activities implements OnItemClickListener {
         mEditText.setText(mFilterString);
         mEditText.addTextChangedListener(new TextWatcher() {
             @Override
+            public void afterTextChanged(Editable s) {
+                mFilterString = s.toString();
+                refreshListView();
+
+            }
+
+            @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                mFilterString = s.toString();
-                refreshListView();
 
             }
         });
@@ -327,43 +380,6 @@ public class MainActivity extends Activities implements OnItemClickListener {
 
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @TargetApi(VERSION_CODES.O)
-    private void menuExport() {
-        Path targetDirectory = Paths.get(Environment.getExternalStorageDirectory().getAbsolutePath(), "Notes", "Notes");
-
-        if (!java.nio.file.Files.isDirectory(targetDirectory)) {
-            try {
-                java.nio.file.Files.createDirectory(targetDirectory);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        checkDatabase();
-
-        List<Pair<Integer, String>> titles = mDatabase.fetchTitles(null);
-        for (Pair<Integer, String> title : titles) {
-            Pair<String, String> note = mDatabase.fetchNote(title.first);
-            try {
-                java.nio.file.Files.write(targetDirectory.resolve(Files.getValidFileName(note.first, ' ')
-                        + ".md"), note.second.getBytes("UTF-8"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-    }
-
-    private void launchDictionary() {
-        Intent i = new Intent(this, DictionaryService.class);
-        startService(i);
-    }
-
-    private void menuSettings() {
-        Intent settings = new Intent(this, SettingsActivity.class);
-
-        startActivity(settings);
     }
 
     @Override
