@@ -76,7 +76,7 @@ class DictionaryWindow {
                 screenSize.y / 5);
 
         params.leftMargin = margin >> 1;
-        params.topMargin = screenSize.y - screenSize.y / 5 - margin;
+        params.topMargin = (screenSize.y - margin) >> 1;
 
         mView.setOnClickListener(new OnClickListener() {
             @Override

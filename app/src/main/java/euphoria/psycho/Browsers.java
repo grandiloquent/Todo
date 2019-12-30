@@ -25,12 +25,14 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
+import euphoria.psycho.common.Contexts;
 import euphoria.psycho.common.Utils;
 import euphoria.psycho.todo.R;
 
 public class Browsers extends Activity {
 
     private static final int MENU_JD = 1;
+    private static final int MENU_COPY_URL = 2;
     private static final String URL_JD = "https://m.jd.com";
     WebView mWebView;
     EditText mEditText;
@@ -121,7 +123,8 @@ public class Browsers extends Activity {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                mEditText.setText(url);
+                // mEditText.setText(url);
+                mUrl = url;
                 evaluateJavascript();
             }
 
@@ -141,7 +144,7 @@ public class Browsers extends Activity {
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
 
 
-               // Log.e(TAG, "Debug: onConsoleMessage, " + consoleMessage.message());
+                // Log.e(TAG, "Debug: onConsoleMessage, " + consoleMessage.message());
 
                 return super.onConsoleMessage(consoleMessage);
             }
@@ -176,9 +179,18 @@ public class Browsers extends Activity {
             case MENU_JD:
                 menuJd();
                 return true;
+            case MENU_COPY_URL:
+                menuCopyURL();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private void menuCopyURL() {
+        Contexts.setText(mUrl);
+    }
+
+    private String mUrl;
 
     @Override
     public void onBackPressed() {
