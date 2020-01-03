@@ -31,6 +31,9 @@
 static const char HEX_ARRAY[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                                  'A', 'B', 'C', 'D', 'E', 'F'};
 
+#define YOUDAO_API_KEY "4da34b556074bc9f"
+#define YOUDAO_API_SECRET "Wt5i6HHltTGFAQgSUgofeWdFZyDxKwOy"
+
 JNIEXPORT jstring JNICALL
 Java_euphoria_psycho_todo_NativeUtils_removeRedundancy(JNIEnv *env, jclass type, jstring text_) {
     const char *text = (*env)->GetStringUTFChars(env, text_, 0);
@@ -55,6 +58,7 @@ Java_euphoria_psycho_todo_NativeUtils_toggleList(JNIEnv *env, jclass type, jstri
     free(ret);
     return ret_str;
 }
+
 JNIEXPORT jstring JNICALL
 Java_euphoria_psycho_todo_NativeUtils_toggleNumberList(JNIEnv *env, jclass type, jstring text_) {
     const char *text = (*env)->GetStringUTFChars(env, text_, 0);
@@ -606,13 +610,13 @@ Java_euphoria_psycho_todo_NativeUtils_youdaoDictionary(JNIEnv *env, jclass type,
         path_str++;
     }
     buf_encode[buf_encode_index] = 0;;
-    size_t buf_path_len = strlen("1f5687b5a6b94361") + (strlen(word) << 2) +
-                          strlen("2433z6GPFslGhUuQltdWP7CPlbk8NZC0") + 60;;
+    size_t buf_path_len = strlen(YOUDAO_API_KEY) + (strlen(word) << 2) +
+                          strlen(YOUDAO_API_SECRET) + 60;;
     char buf_path[buf_path_len];
     memset(buf_path, 0, buf_path_len);
     int salt = time(NULL);
-    snprintf(buf_path, buf_path_len, "%s%s%d%s", "1f5687b5a6b94361", word, salt,
-             "2433z6GPFslGhUuQltdWP7CPlbk8NZC0");
+    snprintf(buf_path, buf_path_len, "%s%s%d%s", YOUDAO_API_KEY, word, salt,
+             YOUDAO_API_SECRET);
     char md5_buf[33];
     MD5_CTX md5_ctx;
     MD5Init(&md5_ctx);
@@ -626,7 +630,7 @@ Java_euphoria_psycho_todo_NativeUtils_youdaoDictionary(JNIEnv *env, jclass type,
     md5_buf[32] = 0;
     memset(buf_path, 0, buf_path_len);
     snprintf(buf_path, buf_path_len, "/api?q=%s&salt=%d&sign=%s&from=%s&appKey=%s&to=%s",
-             buf_encode, salt, md5_buf, from, "1f5687b5a6b94361", to);;
+             buf_encode, salt, md5_buf, from, YOUDAO_API_KEY, to);;
     size_t buf_header_len = strlen(buf_path) + 50;
     char buf_header[buf_header_len];
     memset(buf_header, 0, buf_header_len);

@@ -205,13 +205,13 @@ public class Dictionaries extends SQLiteOpenHelper {
     public static String generateRequestUrl(String query) {
 //        final Pattern pattern = Pattern.compile("[\u4E00-\u9FA5]");
 //        Matcher matcher = pattern.matcher(query);
-        String appKey = "1f5687b5a6b94361";
+        String appKey = "4da34b556074bc9f";
         String salt = String.valueOf(System.currentTimeMillis());
         String from = "";
         from = "EN";
         String to = "";
         to = "zh-CHS";
-        String sign = md5(appKey + query + salt + "2433z6GPFslGhUuQltdWP7CPlbk8NZC0");
+        String sign = md5(appKey + query + salt + "Wt5i6HHltTGFAQgSUgofeWdFZyDxKwOy");
         Map<String, String> params = new HashMap<>();
         params.put("q", query);
         params.put("from", from);
